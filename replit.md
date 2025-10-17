@@ -37,7 +37,7 @@ Preferred communication style: Simple, everyday language.
 - No global state management library (Redux/Zustand) - uses React Query cache as source of truth
 
 **Key Pages & Components**
-- **Home** (`/`): Landing page with today's prediction card, betting interface, and markets timeline
+- **Home** (`/`): Landing page with today's prediction card, betting interface, markets timeline, and past markets
 - **Dashboard** (`/dashboard`): User positions table, balance management, claim winnings, points & referrals
   - **Positions Tab**: Active bets, claim winnings, view rationale
   - **Balance Tab**: Deposit/withdraw USDC
@@ -46,7 +46,8 @@ Preferred communication style: Simple, everyday language.
 - **Shared Components**: 
   - PredictionCard: Displays current market with real-time price updates (TOKEN markets only)
   - BetPanel: Betting interface for AI RIGHT/WRONG
-  - MarketsTimeline: Shows active, locked, and settled markets with status indicators
+  - MarketsTimeline: Shows active, locked, and settled markets with status indicators (all 4 active markets)
+  - PastMarkets: Shows recently settled markets with outcomes and price changes
   - PointsPanel: Points dashboard, referral management, leaderboard
   - PoolMeter, CountdownBadge, ProphetChatDrawer (AI Q&A)
 
@@ -80,6 +81,7 @@ Preferred communication style: Simple, everyday language.
 
 **Market Lifecycle Management**
 - **Cron-based scheduler** using `node-cron` for daily market creation
+- **4 active markets** created daily at 9am (mix of TOKENs and NFTs)
 - Market states: OPEN → LOCKED → SETTLED/REFUND
 - Automated settlement logic via oracle agent
 - Market timing: lockTime = creation + 24h, endTime = creation + 48h
@@ -93,9 +95,13 @@ Preferred communication style: Simple, everyday language.
   - Real-time price updates via `/api/price/:marketId` endpoint (auto-refresh every 30s on frontend)
   - Returns price0, currentPrice, and priceChange percentage
   - Used for settlement to determine actual price movement
+- **NFT Floor Price API** (currently simulated):
+  - NOTE: Reservoir API is shutting down in October 2025
+  - TODO: Migrate to Alchemy getFloorPrice API or similar
+  - Currently returns simulated floor prices for NFT collections (Pudgy Penguins, Milady, etc.)
 - Two operational modes:
-  - **Analytics mode**: Real market data from DexScreener API
-  - **Simulate mode**: AI-generated realistic predictions (fallback when API fails)
+  - **Analytics mode**: Real market data from DexScreener API (for TOKENs)
+  - **Simulate mode**: AI-generated realistic predictions (fallback when API fails, or for NFTs)
 - Generates rationale bullets (4-6 analytical points) for each prediction
 - ProphetX chat drawer for user Q&A about predictions
 
