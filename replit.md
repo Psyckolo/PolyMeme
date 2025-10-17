@@ -37,16 +37,16 @@ Preferred communication style: Simple, everyday language.
 - No global state management library (Redux/Zustand) - uses React Query cache as source of truth
 
 **Key Pages & Components**
-- **Home** (`/`): Landing page with today's prediction card, betting interface, markets timeline, and past markets
+- **Home** (`/`): Landing page with selected market prediction card, betting interface, markets timeline, and past markets
 - **Dashboard** (`/dashboard`): User positions table, balance management, claim winnings, points & referrals
   - **Positions Tab**: Active bets, claim winnings, view rationale
   - **Balance Tab**: Deposit/withdraw USDC
   - **Points Tab**: Airdrop points, referral system, leaderboard
   - **History Tab**: Past market results (coming soon)
 - **Shared Components**: 
-  - PredictionCard: Displays current market with real-time price updates (TOKEN markets only)
-  - BetPanel: Betting interface for AI RIGHT/WRONG
-  - MarketsTimeline: Shows active, locked, and settled markets with status indicators (all 4 active markets)
+  - PredictionCard: Displays selected market with real-time price updates (TOKEN markets only)
+  - BetPanel: Betting interface for AI RIGHT/WRONG on selected market
+  - MarketsTimeline: Shows all 4 active markets with status indicators - **clickable to select market for betting**
   - PastMarkets: Shows recently settled markets with outcomes and price changes
   - PointsPanel: Points dashboard, referral management, leaderboard
   - PoolMeter, CountdownBadge, ProphetChatDrawer (AI Q&A)
@@ -84,8 +84,9 @@ Preferred communication style: Simple, everyday language.
 - **4 active markets** created daily at 9am (mix of TOKENs and NFTs)
 - Market states: OPEN → LOCKED → SETTLED/REFUND
 - Automated settlement logic via oracle agent
-- Market timing: lockTime = creation + 24h, endTime = creation + 48h
+- Market timing: lockTime = creation + 12h, endTime = creation + 24h
 - `getTodayMarket()` returns most recent market by `createdAt` timestamp (descending)
+- Users can select any active market from MarketsTimeline to place bets
 
 **AI Integration Architecture**
 - **OpenAI GPT-5** via Replit AI Integrations service (no API key required)
