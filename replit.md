@@ -38,11 +38,16 @@ Preferred communication style: Simple, everyday language.
 
 **Key Pages & Components**
 - **Home** (`/`): Landing page with today's prediction card, betting interface, and markets timeline
-- **Dashboard** (`/dashboard`): User positions table, balance management, claim winnings
+- **Dashboard** (`/dashboard`): User positions table, balance management, claim winnings, points & referrals
+  - **Positions Tab**: Active bets, claim winnings, view rationale
+  - **Balance Tab**: Deposit/withdraw USDC
+  - **Points Tab**: Airdrop points, referral system, leaderboard
+  - **History Tab**: Past market results (coming soon)
 - **Shared Components**: 
   - PredictionCard: Displays current market with real-time price updates (TOKEN markets only)
   - BetPanel: Betting interface for AI RIGHT/WRONG
   - MarketsTimeline: Shows active, locked, and settled markets with status indicators
+  - PointsPanel: Points dashboard, referral management, leaderboard
   - PoolMeter, CountdownBadge, ProphetChatDrawer (AI Q&A)
 
 ### Backend Architecture
@@ -62,6 +67,16 @@ Preferred communication style: Simple, everyday language.
 - Tables: `markets`, `balances`, `bets`, `rationales`, `user_stats`
 - Configured for Neon serverless PostgreSQL via `DATABASE_URL` environment variable
 - Note: Currently using in-memory storage; database will be added when ready
+
+**Points & Referral System**
+- **Points Earning**: 1 point per USDC wagered (auto-calculated on each bet)
+- **Referral Bonuses**: 
+  - New user: 10 points for applying a code
+  - Referrer: 50 points per successful referral
+- **Referral Codes**: Unique 6-character alphanumeric codes (uppercase)
+- **Leaderboard**: Top 100 users ranked by points
+- **X/Twitter Integration**: Share referral links with pre-filled tweet text
+- **Tracking**: Volume traded, referral count, referrer address stored in `user_stats`
 
 **Market Lifecycle Management**
 - **Cron-based scheduler** using `node-cron` for daily market creation
@@ -90,8 +105,12 @@ Preferred communication style: Simple, everyday language.
 - `/api/price/:marketId` - Real-time price data for TOKEN markets
 - `/api/balance/:userAddress` - User USDC balance
 - `/api/positions/:userAddress` - User's bet positions with market data
-- `/api/bet` - Place bet on AI RIGHT or AI WRONG
+- `/api/bet` - Place bet on AI RIGHT or AI WRONG (awards points automatically)
 - `/api/claim` - Claim winnings from settled markets
+- `/api/stats/:userAddress` - User stats (points, volume, referrals)
+- `/api/referral/generate` - Generate unique 6-character referral code
+- `/api/referral/apply` - Apply referral code for bonuses
+- `/api/leaderboard` - Top 100 users by points
 
 ### External Dependencies
 
