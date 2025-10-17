@@ -66,9 +66,14 @@ Preferred communication style: Simple, everyday language.
 
 **AI Integration Architecture**
 - **OpenAI GPT-5** via Replit AI Integrations service (no API key required)
+- **DexScreener API** (free, no key required) for real-time token prices:
+  - Fetches actual prices for Solana tokens (BONK, WIF) and Ethereum tokens (PEPE)
+  - Provides starting price (price0) when market opens
+  - Real-time price updates via `/api/price/:marketId` endpoint
+  - Used for settlement to determine actual price movement
 - Two operational modes:
-  - **Analytics mode**: Real market data from Reservoir/CoinGecko/DexScreener APIs
-  - **Simulate mode**: AI-generated realistic predictions (fallback when no API keys)
+  - **Analytics mode**: Real market data from DexScreener API
+  - **Simulate mode**: AI-generated realistic predictions (fallback when API fails)
 - Generates rationale bullets (4-6 analytical points) for each prediction
 - ProphetX chat drawer for user Q&A about predictions
 

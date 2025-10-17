@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateRationale, answerQuestion } from "./lib/openai";
+import { getTokenPrice } from "./lib/dexscreener";
 import {
   depositSchema,
   withdrawSchema,
@@ -42,6 +43,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching rationale:", error);
       res.status(500).json({ error: "Failed to fetch rationale" });
+    }
+  });
+
+  // Get current price (real-time) for a market's token
+  app.get("/api/price/:marketId", async (req, res) => {
+    try {
+      const { marketId } = req.params;
+      const market = await storage.getMarket(marketId);
+      
+      if (!market) {
+        return res.status(404).json({ error: "Market not found" });
+      }
+
+      // Only fetch real-time price for tokens
+      if (market.assetType !== "TOKEN") {
+        return res.json({ 
+          price0: market.price0,
+          currentPrice: market.price0, // For NFTs, no real-time update
+          priceChange: 0 
+        });
+      }
+
+      const currentPrice = await getTokenPrice(market.assetId);
+      const price0 = parseFloat(market.price0 || "0");
+      const priceNow = currentPrice ? parseFloat(currentPrice) : price0;
+      const priceChange = price0 > 0 ? ((priceNow - price0) / price0) * 100 : 0;
+
+      res.json({
+        price0: market.price0,
+        currentPrice: priceNow.toFixed(6),
+        priceChange: priceChange.toFixed(2),
+      });
+    } catch (error) {
+      console.error("Error fetching price:", error);
+      res.status(500).json({ error: "Failed to fetch price" });
     }
   });
 

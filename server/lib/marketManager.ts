@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import { storage } from "../storage";
 import { generateRationale } from "./openai";
+import { getPriceOrFallback, getTokenPrice } from "./dexscreener";
 
 const ASSETS = [
   { type: "TOKEN", name: "PEPE", id: "pepe", logo: "https://assets.coingecko.com/coins/images/29850/small/pepe-token.jpeg" },
@@ -31,9 +32,16 @@ export async function createDailyMarket() {
     const endTime = new Date(now);
     endTime.setHours(endTime.getHours() + 48);
     
-    // Simulate price0 (starting price)
-    const basePrice = Math.random() * 100 + 10;
-    const price0 = basePrice.toFixed(6);
+    // Get real price from DexScreener or fallback to simulated price
+    let price0 = "0";
+    if (randomAsset.type === "TOKEN") {
+      price0 = await getPriceOrFallback(randomAsset.id);
+      console.log(`${randomAsset.name} starting price: $${price0}`);
+    } else {
+      // For NFTs, simulate floor price
+      const basePrice = Math.random() * 10 + 1;
+      price0 = basePrice.toFixed(6);
+    }
     
     const market = await storage.createMarket({
       assetType: randomAsset.type,
@@ -80,17 +88,33 @@ export async function settleMarket(marketId: string) {
       return;
     }
     
-    // Simulate price1 (ending price) based on direction
     const price0 = parseFloat(market.price0 || "0");
     const thresholdPercent = market.thresholdBps / 100;
     
-    // Simulate price movement
-    const randomFactor = (Math.random() - 0.5) * 2; // -1 to 1
-    const actualMove = thresholdPercent * (0.8 + randomFactor * 0.6); // ±40% variation
-    
-    const price1 = market.direction === "UP"
-      ? price0 * (1 + actualMove / 100)
-      : price0 * (1 - actualMove / 100);
+    // Get real ending price for tokens
+    let price1 = price0;
+    if (market.assetType === "TOKEN") {
+      const realPrice = await getTokenPrice(market.assetId);
+      if (realPrice) {
+        price1 = parseFloat(realPrice);
+        console.log(`Real ending price for ${market.assetName}: $${price1}`);
+      } else {
+        // Fallback: simulate if API fails
+        const randomFactor = (Math.random() - 0.5) * 2;
+        const actualMove = thresholdPercent * (0.8 + randomFactor * 0.6);
+        price1 = market.direction === "UP"
+          ? price0 * (1 + actualMove / 100)
+          : price0 * (1 - actualMove / 100);
+        console.log(`Simulated ending price (API unavailable): $${price1}`);
+      }
+    } else {
+      // For NFTs, simulate price movement
+      const randomFactor = (Math.random() - 0.5) * 2;
+      const actualMove = thresholdPercent * (0.8 + randomFactor * 0.6);
+      price1 = market.direction === "UP"
+        ? price0 * (1 + actualMove / 100)
+        : price0 * (1 - actualMove / 100);
+    }
     
     // Determine winner
     const actualPercent = ((price1 - price0) / price0) * 100;
@@ -114,7 +138,7 @@ export async function settleMarket(marketId: string) {
       settledAt: new Date(),
     });
     
-    console.log(`Market settled: Winner = ${winner}, Price: ${price0} → ${price1.toFixed(6)}`);
+    console.log(`Market settled: Winner = ${winner}, Price: $${price0} → ${price1.toFixed(6)} (${actualPercent.toFixed(2)}%)`);
   } catch (error) {
     console.error("Error settling market:", error);
   }

@@ -66,6 +66,8 @@ export class MemStorage implements IStorage {
       ...insertMarket,
       id,
       marketId: this.marketIdCounter++,
+      assetLogo: insertMarket.assetLogo || null,
+      thresholdBps: insertMarket.thresholdBps || 500,
       poolRight: "0",
       poolWrong: "0",
       status: "OPEN",
