@@ -25,13 +25,13 @@ export async function createDailyMarket() {
     const now = new Date();
     const startTime = new Date(now);
     
-    // Lock time is 24 hours from now (when betting closes)
+    // Lock time is 12 hours from now (when betting closes)
     const lockTime = new Date(now);
-    lockTime.setHours(lockTime.getHours() + 24);
+    lockTime.setHours(lockTime.getHours() + 12);
     
-    // End time is 48 hours from now (when market settles)
+    // End time is 24 hours from now (when market settles)
     const endTime = new Date(now);
-    endTime.setHours(endTime.getHours() + 48);
+    endTime.setHours(endTime.getHours() + 24);
     
     // Get real price from DexScreener or NFT floor price API
     let price0 = "0";
@@ -184,9 +184,9 @@ export async function createMultipleMarkets(count: number = 4) {
     const now = new Date();
     const startTime = new Date(now);
     const lockTime = new Date(now);
-    lockTime.setHours(lockTime.getHours() + 24);
+    lockTime.setHours(lockTime.getHours() + 12);
     const endTime = new Date(now);
-    endTime.setHours(endTime.getHours() + 48);
+    endTime.setHours(endTime.getHours() + 24);
     
     // Get real price
     let price0 = "0";
