@@ -18,6 +18,28 @@ interface PriceData {
   priceChange: string;
 }
 
+// Format price with appropriate decimal places
+function formatPrice(price: number): string {
+  if (price === 0) return "$0.0000";
+  
+  // For very small numbers (< 0.01), show more decimals
+  if (price < 0.01) {
+    // Find first non-zero decimal
+    const priceStr = price.toFixed(20); // Get many decimals
+    const match = priceStr.match(/\.0*[1-9]/);
+    if (match) {
+      const zerosCount = match[0].length - 2; // Count zeros after decimal
+      const significantDecimals = Math.min(zerosCount + 4, 10); // Show 4 significant digits
+      return `$${price.toFixed(significantDecimals)}`;
+    }
+  }
+  
+  // For regular numbers, use standard 4 decimals
+  if (price < 1) return `$${price.toFixed(4)}`;
+  if (price < 100) return `$${price.toFixed(2)}`;
+  return `$${price.toFixed(0)}`;
+}
+
 export function PredictionCard({ market, isLoading }: PredictionCardProps) {
   // Fetch real-time price for tokens
   const { data: priceData } = useQuery<PriceData>({
@@ -104,7 +126,7 @@ export function PredictionCard({ market, isLoading }: PredictionCardProps) {
           <div className="p-4 bg-muted/20 rounded-lg">
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Starting Price</p>
             <p className="text-2xl font-mono font-bold" data-testid="text-price-start">
-              ${price0.toFixed(4)}
+              {formatPrice(price0)}
             </p>
           </div>
           <div className="p-4 bg-muted/20 rounded-lg">
@@ -113,7 +135,7 @@ export function PredictionCard({ market, isLoading }: PredictionCardProps) {
               {priceData && <TrendingUp className="w-3 h-3" />}
             </p>
             <p className="text-2xl font-mono font-bold" data-testid="text-price-current">
-              ${currentPrice.toFixed(4)}
+              {formatPrice(currentPrice)}
               {priceChange !== 0 && (
                 <span className={`text-sm ml-2 ${priceChange > 0 ? 'text-[hsl(var(--neon-green))]' : 'text-destructive'}`}>
                   {priceChange > 0 ? '+' : ''}{priceChange.toFixed(2)}%
