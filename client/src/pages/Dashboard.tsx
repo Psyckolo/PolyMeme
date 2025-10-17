@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { PositionsTable } from "@/components/PositionsTable";
 import { BalancePanel } from "@/components/BalancePanel";
+import { PointsPanel } from "@/components/PointsPanel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Wallet, LogOut } from "lucide-react";
@@ -192,9 +193,10 @@ export default function Dashboard() {
           </Card>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="positions" data-testid="tab-positions">Positions</TabsTrigger>
             <TabsTrigger value="balance" data-testid="tab-balance">Balance</TabsTrigger>
+            <TabsTrigger value="points" data-testid="tab-points">Points</TabsTrigger>
             <TabsTrigger value="history" data-testid="tab-history">History</TabsTrigger>
           </TabsList>
 
@@ -213,6 +215,10 @@ export default function Dashboard() {
               onWithdraw={(amount) => withdrawMutation.mutateAsync(amount)}
               onWithdrawAll={() => withdrawMutation.mutateAsync(balanceData?.balance || "0")}
             />
+          </TabsContent>
+
+          <TabsContent value="points" className="space-y-4">
+            <PointsPanel userAddress={userAddress} />
           </TabsContent>
 
           <TabsContent value="history" className="space-y-4">
