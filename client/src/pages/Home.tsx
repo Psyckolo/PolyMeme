@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { GlitchText } from "@/components/GlitchText";
 import { ParticleField } from "@/components/ParticleField";
 import { PredictionCard } from "@/components/PredictionCard";
@@ -7,16 +7,18 @@ import { BetPanel } from "@/components/BetPanel";
 import { ProphetChatDrawer } from "@/components/ProphetChatDrawer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, Ghost } from "lucide-react";
+import { Wallet, Ghost, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Market } from "@shared/schema";
 import heroImage from "@assets/generated_images/Cyberpunk_terminal_hero_background_7e72bdc2.png";
 
 export default function Home() {
-  const [isConnected, setIsConnected] = useState(false);
-  const [userAddress, setUserAddress] = useState("");
+  const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
   const { toast } = useToast();
+  const userAddress = address || "";
 
   // Fetch today's market
   const { data: market, isLoading: marketLoading } = useQuery<Market>({
@@ -58,19 +60,45 @@ export default function Home() {
     },
   });
 
-  const handleConnect = async () => {
-    // Simulate wallet connection (in real app, use wagmi/RainbowKit)
-    const mockAddress = "0x" + Math.random().toString(16).substr(2, 40);
-    setUserAddress(mockAddress);
-    setIsConnected(true);
-    toast({
-      title: "Wallet Connected",
-      description: `Connected to ${mockAddress.substring(0, 6)}...${mockAddress.substring(38)}`,
-    });
+  const handleBet = async (side: "RIGHT" | "WRONG", amount: string) => {
+    if (!isConnected || !userAddress) {
+      toast({
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet to place a bet.",
+        variant: "destructive",
+      });
+      return;
+    }
+    await placeBetMutation.mutateAsync({ side, amount });
   };
 
-  const handleBet = async (side: "RIGHT" | "WRONG", amount: string) => {
-    await placeBetMutation.mutateAsync({ side, amount });
+  const handleConnect = async () => {
+    const metaMaskConnector = connectors.find(c => c.id === 'injected' || c.name === 'MetaMask');
+    if (metaMaskConnector) {
+      try {
+        connect({ connector: metaMaskConnector });
+      } catch (error) {
+        toast({
+          title: "Connection Failed",
+          description: "Please make sure MetaMask is installed.",
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: "MetaMask Not Found",
+        description: "Please install MetaMask browser extension.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDisconnect = () => {
+    disconnect();
+    toast({
+      title: "Wallet Disconnected",
+      description: "Your wallet has been disconnected.",
+    });
   };
 
   const handleAskProphet = async (question: string): Promise<string> => {
@@ -123,9 +151,19 @@ export default function Home() {
           
           <div className="flex items-center gap-3">
             {isConnected ? (
-              <Badge variant="default" className="font-mono" data-testid="badge-wallet-address">
-                {userAddress.substring(0, 6)}...{userAddress.substring(38)}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="default" className="font-mono" data-testid="badge-wallet-address">
+                  {userAddress.substring(0, 6)}...{userAddress.substring(38)}
+                </Badge>
+                <Button 
+                  onClick={handleDisconnect} 
+                  variant="outline"
+                  size="icon"
+                  data-testid="button-disconnect"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
             ) : (
               <Button 
                 onClick={handleConnect} 

@@ -80,11 +80,11 @@ Preferred communication style: Simple, everyday language.
 - **CoinGecko API**: Token price data (optional, for analytics mode)  
 - **DexScreener API**: DEX trading data (optional, for analytics mode)
 
-**Web3 Stack (Prepared, Not Yet Implemented)**
-- **RainbowKit**: Wallet connection UI
-- **wagmi**: React hooks for Ethereum
+**Web3 Stack (Implemented)**
+- **wagmi**: React hooks for Ethereum with injected connector (MetaMask)
 - **viem**: Low-level Ethereum interactions
-- Currently using mock wallet addresses; full Web3 integration pending
+- Real MetaMask wallet connection enabled - users connect actual wallets
+- Supports mainnet, Sepolia, Base, and Base Sepolia networks
 
 **UI & Utilities**
 - **Radix UI**: Unstyled accessible components (dialogs, dropdowns, tooltips, etc.)

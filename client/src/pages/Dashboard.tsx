@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { PositionsTable } from "@/components/PositionsTable";
 import { BalancePanel } from "@/components/BalancePanel";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Wallet, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import confetti from "canvas-confetti";
@@ -19,7 +21,10 @@ interface PositionWithMarket extends Bet {
 export default function Dashboard() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [userAddress] = useState("0x" + Math.random().toString(16).substr(2, 40)); // Mock for now
+  const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
+  const userAddress = address || "";
   
   // Get tab from URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -120,7 +125,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
@@ -130,6 +135,38 @@ export default function Dashboard() {
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Button>
+          
+          <div className="flex items-center gap-2">
+            {isConnected ? (
+              <>
+                <Badge variant="default" className="font-mono" data-testid="badge-wallet-address">
+                  {userAddress.substring(0, 6)}...{userAddress.substring(38)}
+                </Badge>
+                <Button 
+                  onClick={() => disconnect()} 
+                  variant="outline"
+                  size="icon"
+                  data-testid="button-disconnect"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </>
+            ) : (
+              <Button 
+                onClick={() => {
+                  const metaMaskConnector = connectors.find(c => c.id === 'injected' || c.name === 'MetaMask');
+                  if (metaMaskConnector) {
+                    connect({ connector: metaMaskConnector });
+                  }
+                }} 
+                variant="default"
+                data-testid="button-connect-metamask"
+              >
+                <Wallet className="w-4 h-4 mr-2" />
+                Connect MetaMask
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -137,7 +174,24 @@ export default function Dashboard() {
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-black font-display mb-8">Dashboard</h1>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        {!isConnected ? (
+          <Card className="p-12 text-center">
+            <p className="text-muted-foreground mb-4">Connect your wallet to view your dashboard</p>
+            <Button 
+              onClick={() => {
+                const metaMaskConnector = connectors.find(c => c.id === 'injected' || c.name === 'MetaMask');
+                if (metaMaskConnector) {
+                  connect({ connector: metaMaskConnector });
+                }
+              }}
+              data-testid="button-connect-wallet-dashboard"
+            >
+              <Wallet className="w-4 h-4 mr-2" />
+              Connect Wallet
+            </Button>
+          </Card>
+        ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="positions" data-testid="tab-positions">Positions</TabsTrigger>
             <TabsTrigger value="balance" data-testid="tab-balance">Balance</TabsTrigger>
@@ -169,6 +223,7 @@ export default function Dashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+        )}
       </main>
     </div>
   );
