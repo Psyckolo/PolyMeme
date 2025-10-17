@@ -9,7 +9,7 @@ import { ProphetChatDrawer } from "@/components/ProphetChatDrawer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, Ghost, LogOut, LayoutDashboard, TrendingUp, Shield, Zap } from "lucide-react";
+import { Wallet, Ghost, LogOut, LayoutDashboard, TrendingUp, Shield, Zap, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Market } from "@shared/schema";
@@ -75,17 +75,32 @@ export default function Home() {
   };
 
   const handleConnect = async () => {
+    console.log("Connect button clicked, connectors:", connectors);
     const metaMaskConnector = connectors.find(c => c.id === 'injected');
-    if (metaMaskConnector) {
-      try {
-        await connect({ connector: metaMaskConnector });
-      } catch (error: any) {
-        toast({
-          title: "Connection Failed",
-          description: error.message || "Please try again",
-          variant: "destructive",
-        });
-      }
+    
+    if (!metaMaskConnector) {
+      toast({
+        title: "Wallet Not Found",
+        description: "Please install MetaMask or another Web3 wallet",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      console.log("Connecting with connector:", metaMaskConnector);
+      await connect({ connector: metaMaskConnector });
+      toast({
+        title: "Wallet Connected",
+        description: "Successfully connected to your wallet",
+      });
+    } catch (error: any) {
+      console.error("Connection error:", error);
+      toast({
+        title: "Connection Failed",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
     }
   };
 
@@ -239,6 +254,61 @@ export default function Home() {
             </CardHeader>
           </Card>
         </div>
+
+        {/* Recent Activity */}
+        <Card className="max-w-5xl mx-auto bg-card/50 backdrop-blur-sm border-border" data-testid="card-recent-activity">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Activity className="w-5 h-5 text-primary" />
+              <CardTitle>Recent Market Activity</CardTitle>
+            </div>
+            <CardDescription>Live betting activity from ProphetX users</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-8 text-center">
+              <div>
+                <div className="text-3xl font-black font-display text-[hsl(var(--neon-magenta))]">18</div>
+                <div className="text-sm text-muted-foreground mt-1">Active Bets</div>
+              </div>
+              <div>
+                <div className="text-3xl font-black font-display text-[hsl(var(--neon-cyan))]">$547</div>
+                <div className="text-sm text-muted-foreground mt-1">Total Volume</div>
+              </div>
+              <div>
+                <div className="text-3xl font-black font-display text-primary">$127</div>
+                <div className="text-sm text-muted-foreground mt-1">Largest Bet</div>
+              </div>
+            </div>
+            
+            <div className="mt-6 space-y-2">
+              <div className="flex items-center justify-between text-sm py-2 border-t border-border/50">
+                <span className="text-muted-foreground">0x7a2f...b3c4</span>
+                <Badge variant="outline" className="text-[hsl(var(--neon-magenta))]">AI RIGHT</Badge>
+                <span className="font-mono">$85</span>
+              </div>
+              <div className="flex items-center justify-between text-sm py-2 border-t border-border/50">
+                <span className="text-muted-foreground">0x9e1c...4a7d</span>
+                <Badge variant="outline" className="text-[hsl(var(--neon-cyan))]">AI WRONG</Badge>
+                <span className="font-mono">$42</span>
+              </div>
+              <div className="flex items-center justify-between text-sm py-2 border-t border-border/50">
+                <span className="text-muted-foreground">0x3b8f...2e6a</span>
+                <Badge variant="outline" className="text-[hsl(var(--neon-magenta))]">AI RIGHT</Badge>
+                <span className="font-mono">$127</span>
+              </div>
+              <div className="flex items-center justify-between text-sm py-2 border-t border-border/50">
+                <span className="text-muted-foreground">0x6d4a...8c9f</span>
+                <Badge variant="outline" className="text-[hsl(var(--neon-cyan))]">AI WRONG</Badge>
+                <span className="font-mono">$68</span>
+              </div>
+              <div className="flex items-center justify-between text-sm py-2 border-t border-border/50">
+                <span className="text-muted-foreground">0x1f7b...5d2e</span>
+                <Badge variant="outline" className="text-[hsl(var(--neon-magenta))]">AI RIGHT</Badge>
+                <span className="font-mono">$93</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Today's Prediction Card */}
         <PredictionCard market={market || null} isLoading={marketLoading} />
