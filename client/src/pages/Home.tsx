@@ -5,6 +5,7 @@ import { ParticleField } from "@/components/ParticleField";
 import { PredictionCard } from "@/components/PredictionCard";
 import { BetPanel } from "@/components/BetPanel";
 import { ProphetChatDrawer } from "@/components/ProphetChatDrawer";
+import { MetaMaskGuide } from "@/components/MetaMaskGuide";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, Ghost, LogOut } from "lucide-react";
@@ -103,13 +104,14 @@ export default function Home() {
 
   const handleAskProphet = async (question: string): Promise<string> => {
     try {
-      const response = await apiRequest("POST", "/api/chat", { question, marketId: market?.id });
-      console.log("Chat response received:", response);
-      console.log("Answer value:", response.answer, "Type:", typeof response.answer);
+      const res = await apiRequest("POST", "/api/chat", { question, marketId: market?.id });
+      const data = await res.json();
+      console.log("Chat response received:", data);
+      console.log("Answer value:", data.answer, "Type:", typeof data.answer);
       
       // Server always returns a helpful response with fallbacks
-      if (response.answer && response.answer.trim().length > 0) {
-        return response.answer;
+      if (data.answer && data.answer.trim().length > 0) {
+        return data.answer;
       }
       
       // This should rarely happen now
@@ -192,6 +194,9 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-4 py-12 space-y-12">
+        {/* MetaMask iframe warning */}
+        <MetaMaskGuide />
+        
         {/* Hero Section */}
         <div className="text-center space-y-6 max-w-4xl mx-auto">
           <h2 className="text-5xl md:text-7xl font-black font-display tracking-tight">

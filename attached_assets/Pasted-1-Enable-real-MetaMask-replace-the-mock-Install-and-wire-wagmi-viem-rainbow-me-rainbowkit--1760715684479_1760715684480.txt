@@ -1,0 +1,147 @@
+1) Enable real MetaMask (replace the mock)
+
+Install and wire wagmi + viem + @rainbow-me/rainbowkit (or plain window.ethereum if you prefer minimal).
+
+Create a WalletProvider at app root:
+
+Default chain: Base Sepolia (chainId 84532) with a public RPC.
+
+Fallback: Hardhat 31337 when running locally.
+
+Replace the “Connect MetaMask” mock with a real connect:
+
+Detect provider (window.ethereum present).
+
+eth_requestAccounts on click.
+
+Show the connected address in the header and persist it in front-end state.
+
+Add provider-absent UI:
+
+If no MetaMask: show “Install MetaMask” CTA (link to extension), keep a “Demo Mode (Simulated Wallet)” button for testing.
+
+⚠ Replit preview often runs inside an iframe, which can block the MetaMask prompt.
+Open the app in a new tab using the full https://<your-repl>.replit.app URL (not the embedded preview).
+Also ensure the site is served over HTTPS (Replit prod URLs already are).
+
+2) Make the page never look empty
+
+On server boot, seed a “Today’s Market” immediately in MODE=simulate:
+
+Asset sample list: PEPE, WIF, DOGE, MILADY, PUDGY.
+
+Direction: UP/DOWN based on random with a slight bias to recent volatility from your mocked price feed.
+
+Threshold: 3–6%.
+
+Start now, lock at T0+30m, settle at T0+24h.
+
+Add a top-left badge: Simulated or Live data (auto-switch when valid keys are present).
+
+If a user isn’t connected, still show the prediction card with disabled Bet buttons and tooltips (“Connect wallet to bet”).
+
+3) Fix the Prophet chat so it always answers
+
+On server: if OpenAI returns empty/throws, build a deterministic fallback using current market:
+
+Asset, Type (Token/NFT), Direction, Threshold %, T0 price, last 24h vol (mock or real), a short “why now” (momentum/floor stability).
+
+Front-end: never render a hardcoded “unavailable” string; always show the server’s answer or fallbackAnswer.
+
+4) Balance & positions bound to real wallet address
+
+Replace the mock user ID with the connected EVM address as the key for:
+
+balances, positions (ERC-1155-like receipts), claimable.
+
+If disconnected, show read-only states and a CTA to connect.
+
+5) Add Withdraw and Withdraw All
+
+Server already has deposit/withdraw in memory; expose both actions in the Balance panel.
+
+Enforce: cannot withdraw locked amounts (committed to pools) until settle/refund.
+
+6) Admin panel (tiny, but life-saving)
+
+Read-only panel (or protected by an env flag) with:
+
+Mode: Live / Simulated
+
+Chain: Base Sepolia / Local
+
+Oracle health: last run, next run
+
+Buttons (dev-only): Create test market now, Force settle, Health check
+
+🗄️ Persistence (lightweight, quick)
+
+You’re currently in-memory. Ask Replit to add ONE of these:
+
+Option A — SQLite (recommended)
+
+Add SQLite (via Prisma or better-sqlite3).
+
+Tables: users (address), markets, bets (user, marketId, side, amount), balances, rationales.
+
+On boot: migrate, then seed the daily market if none exists.
+
+Option B — JSON file (fastest)
+
+Write a tiny storage layer that atomically reads/writes a single JSON file:
+
+Fields mirror the in-memory structures.
+
+Flush after every state change (bet/claim/deposit/withdraw/settle).
+
+Add a recovery on boot (load file); if corrupt, back up and start fresh, then seed market.
+
+Either option prevents “data lost on restart”.
+
+🌐 Network / Wallet specifics
+
+Default chain for wallet connect: Base Sepolia (84532).
+
+Show the detected chain name and offer a “Switch Network” prompt if the user is on the wrong chain.
+
+If no provider: keep a Demo Mode using the simulated address so people can try the UX without a wallet.
+
+🧪 Acceptance tests (what “done” looks like)
+
+Connect wallet
+
+Open in a new tab (not embedded).
+
+Click Connect MetaMask → MetaMask prompt appears → address shown in header.
+
+Landing clarity
+
+See Today’s Prediction card (asset, type, direction, threshold, countdown, pool meters).
+
+Badge says Simulated unless keys are present.
+
+Deposit / Bet / Lock
+
+Deposit credits your balance for the connected address.
+
+Bet RIGHT/WRONG mints a receipt (position row visible).
+
+After 30 minutes (or using Force lock/settle in admin), bets close.
+
+Settle / Claim
+
+At T+24h (or forced), market settles (winner visible).
+
+Claim credits winnings to balance; receipt is removed (burned).
+
+Withdraw sends balance back (simulated for now; on-chain later).
+
+Prophet chat
+
+“Ask the Prophet” always returns a reasoned answer (fallback if OpenAI empty).
+
+No generic “unavailable” strings.
+
+Persistence
+
+Restart the server → balances, positions, history, and current market are still there.

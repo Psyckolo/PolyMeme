@@ -98,17 +98,20 @@ Requirements:
       max_completion_tokens: 300,
     });
 
-    console.log("OpenAI response received:", response.choices[0]?.message?.content ? "Success" : "Empty");
+    const content = response.choices[0]?.message?.content?.trim();
+    console.log("OpenAI response received:", content ? `Success (${content.length} chars)` : "Empty");
     
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      console.warn("OpenAI returned empty content");
+    if (!content || content.length === 0) {
+      console.warn("OpenAI returned empty content, using fallback");
       // Return a helpful fallback based on market context
       if (marketContext?.market) {
         const market = marketContext.market;
-        return `I predicted ${market.assetName} will move ${market.direction} by ${market.thresholdBps / 100}% based on current market dynamics and technical analysis. This prediction considers volume patterns, sentiment indicators, and price action trends.`;
+        const rationaleData = marketContext.rationale;
+        const bullets = rationaleData?.bullets || [];
+        const bulletText = bullets.length > 0 ? ` Key factors: ${bullets[0]}` : "";
+        return `I predicted ${market.assetName} will move ${market.direction} by ${market.thresholdBps / 100}% based on current market analysis.${bulletText}`;
       }
-      return "I analyze market data and trends to make predictions. Ask me about specific aspects of the current prediction for more details.";
+      return "I analyze market data and trends to make predictions. Ask me about the current prediction for more details.";
     }
     
     return content;
