@@ -6,8 +6,7 @@ import { PredictionCard } from "@/components/PredictionCard";
 import { BetPanel } from "@/components/BetPanel";
 import { ProphetChatDrawer } from "@/components/ProphetChatDrawer";
 import { MetaMaskGuide } from "@/components/MetaMaskGuide";
-import { WalletConflictGuide } from "@/components/WalletConflictGuide";
-import { MetaMaskStatus } from "@/components/MetaMaskStatus";
+import { WalletDiagnostic } from "@/components/WalletDiagnostic";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, Ghost, LogOut } from "lucide-react";
@@ -79,32 +78,75 @@ export default function Home() {
     // Check if MetaMask is installed
     if (!window.ethereum) {
       toast({
-        title: "MetaMask Non Installé",
-        description: "Veuillez installer l'extension MetaMask pour continuer.",
+        title: "⚠️ MetaMask Non Installé",
+        description: "Installez MetaMask puis rafraîchissez la page.",
         variant: "destructive",
       });
       window.open('https://metamask.io/download/', '_blank');
       return;
     }
 
-    // Try to get MetaMask specifically if multiple wallets exist
-    let provider = window.ethereum;
-    if ((window.ethereum as any).providers?.length > 0) {
-      const providers = (window.ethereum as any).providers;
-      const metamaskProvider = providers.find((p: any) => p.isMetaMask);
-      if (metamaskProvider) {
-        provider = metamaskProvider;
-        console.log("Using MetaMask from providers array");
+    // Diagnostic: Find MetaMask provider
+    let metaMaskProvider = null;
+    const providers = (window.ethereum as any).providers;
+    
+    if (Array.isArray(providers) && providers.length > 0) {
+      // Multiple wallets detected - find MetaMask
+      metaMaskProvider = providers.find((p: any) => p.isMetaMask);
+      
+      if (!metaMaskProvider) {
+        toast({
+          title: "⚠️ Conflit de Wallets",
+          description: "Désactivez les autres wallets et gardez seulement MetaMask. Allez dans chrome://extensions",
+          variant: "destructive",
+          duration: 8000,
+        });
+        return;
       }
+      
+      console.log(`Found MetaMask among ${providers.length} providers`);
+    } else if ((window.ethereum as any).isMetaMask) {
+      metaMaskProvider = window.ethereum;
+      console.log("Using direct MetaMask provider");
+    } else {
+      toast({
+        title: "⚠️ MetaMask Non Détecté",
+        description: "Vérifiez que MetaMask est installé et activé. Désactivez les autres wallets.",
+        variant: "destructive",
+      });
+      return;
     }
 
+    // Check if MetaMask is locked
+    try {
+      const accounts = await metaMaskProvider.request({ method: 'eth_accounts' });
+      if (!accounts || accounts.length === 0) {
+        toast({
+          title: "🔒 MetaMask Verrouillé",
+          description: "Cliquez sur l'icône 🦊 MetaMask et entrez votre mot de passe pour déverrouiller.",
+          variant: "destructive",
+          duration: 8000,
+        });
+        return;
+      }
+    } catch (error: any) {
+      console.error("MetaMask locked check failed:", error);
+      toast({
+        title: "🔒 MetaMask Verrouillé ou Erreur",
+        description: "Déverrouillez MetaMask puis réessayez.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Everything checks out - try to connect
     const metaMaskConnector = connectors.find(c => c.id === 'injected' || c.name === 'MetaMask');
     if (metaMaskConnector) {
       try {
         console.log("Attempting to connect MetaMask...");
         await connect({ connector: metaMaskConnector });
         toast({
-          title: "Wallet Connecté",
+          title: "✅ Wallet Connecté",
           description: "Votre wallet MetaMask est maintenant connecté.",
         });
       } catch (error: any) {
@@ -116,17 +158,19 @@ export default function Home() {
           errorMsg = "Connexion annulée. Veuillez approuver la connexion dans MetaMask.";
         } else if (error.message?.includes("already processing")) {
           errorMsg = "Une demande de connexion est déjà en cours. Vérifiez MetaMask.";
+        } else if (error.message?.includes("account")) {
+          errorMsg = "MetaMask est verrouillé. Déverrouillez-le et réessayez.";
         }
         
         toast({
-          title: "Erreur de Connexion",
+          title: "❌ Erreur de Connexion",
           description: errorMsg,
           variant: "destructive",
         });
       }
     } else {
       toast({
-        title: "MetaMask Non Trouvé",
+        title: "⚠️ Connecteur Non Trouvé",
         description: "Impossible de trouver le connecteur MetaMask.",
         variant: "destructive",
       });
@@ -233,10 +277,9 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-4 py-12 space-y-12">
-        {/* Wallet status and warnings */}
-        <MetaMaskStatus />
+        {/* Complete wallet diagnostic */}
+        <WalletDiagnostic />
         <MetaMaskGuide />
-        <WalletConflictGuide />
         
         {/* Hero Section */}
         <div className="text-center space-y-6 max-w-4xl mx-auto">
