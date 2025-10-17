@@ -195,7 +195,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ticketId,
       });
       
-      res.json({ success: true, bet });
+      // Update user stats: add points (1 point per USDC wagered) and update volume
+      const betAmount = parseFloat(amount);
+      const points = Math.floor(betAmount); // 1 point per USDC
+      
+      const currentStats = await storage.getUserStats(userAddress);
+      const currentVolume = parseFloat(currentStats?.volumeTraded || "0");
+      const currentPoints = currentStats?.points || 0;
+      
+      await storage.createOrUpdateUserStats(userAddress, {
+        points: currentPoints + points,
+        volumeTraded: (currentVolume + betAmount).toString(),
+      });
+      
+      res.json({ success: true, bet, pointsEarned: points });
     } catch (error: any) {
       console.error("Error placing bet:", error);
       res.status(400).json({ error: error.message || "Failed to place bet" });
