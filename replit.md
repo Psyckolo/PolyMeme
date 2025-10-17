@@ -51,6 +51,13 @@ Preferred communication style: Simple, everyday language.
   - PointsPanel: Points dashboard, referral management, leaderboard
   - PoolMeter, CountdownBadge, ProphetChatDrawer (AI Q&A)
 
+**Price Formatting Utility**
+- Shared `formatPrice()` function in `client/src/lib/utils/price.ts`
+- Handles small-value tokens with significant digits (e.g., BONK at $0.00001399, PEPE at $0.000006694)
+- Used consistently across PredictionCard and MarketsTimeline
+- Prevents "$0.0000" display for tokens with fractional cent values
+- Logic: Shows 2-10 decimal places based on price magnitude to preserve meaningful precision
+
 ### Backend Architecture
 
 **Server Framework**
@@ -59,15 +66,17 @@ Preferred communication style: Simple, everyday language.
 - RESTful API design pattern
 
 **Data Storage Strategy**
-- **In-memory storage** (`MemStorage` class) implementing `IStorage` interface
-- Designed for future PostgreSQL migration via Drizzle ORM (configuration present, not yet active)
+- **PostgreSQL database** (`DatabaseStorage` class) implementing `IStorage` interface
+- Uses Drizzle ORM for type-safe database operations
+- Data persists across server restarts (no more in-memory volatility)
 - Storage entities: Markets, Balances, Bets, Rationales, UserStats
 
-**Database Schema (Prepared for PostgreSQL)**
+**Database Schema (Active PostgreSQL)**
 - Uses Drizzle ORM with schema definitions in `shared/schema.ts`
 - Tables: `markets`, `balances`, `bets`, `rationales`, `user_stats`
-- Configured for Neon serverless PostgreSQL via `DATABASE_URL` environment variable
-- Note: Currently using in-memory storage; database will be added when ready
+- Neon serverless PostgreSQL via `DATABASE_URL` environment variable
+- Database connection configured in `server/db.ts`
+- Schema pushed to database via `npm run db:push`
 
 **Points & Referral System**
 - **Points Earning**: 1 point per USDC wagered (auto-calculated on each bet)
