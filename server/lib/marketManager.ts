@@ -2,6 +2,7 @@ import cron from "node-cron";
 import { storage } from "../storage";
 import { generateRationale } from "./openai";
 import { getPriceOrFallback, getTokenPrice } from "./dexscreener";
+import { getFloorPriceOrFallback } from "./nftfloor";
 
 const ASSETS = [
   { type: "TOKEN", name: "PEPE", id: "pepe", logo: "https://assets.coingecko.com/coins/images/29850/small/pepe-token.jpeg" },
@@ -32,15 +33,15 @@ export async function createDailyMarket() {
     const endTime = new Date(now);
     endTime.setHours(endTime.getHours() + 48);
     
-    // Get real price from DexScreener or fallback to simulated price
+    // Get real price from DexScreener or NFT floor price API
     let price0 = "0";
     if (randomAsset.type === "TOKEN") {
       price0 = await getPriceOrFallback(randomAsset.id);
       console.log(`${randomAsset.name} starting price: $${price0}`);
     } else {
-      // For NFTs, simulate floor price
-      const basePrice = Math.random() * 10 + 1;
-      price0 = basePrice.toFixed(6);
+      // For NFTs, get floor price (currently simulated)
+      price0 = await getFloorPriceOrFallback(randomAsset.id);
+      console.log(`${randomAsset.name} starting floor price: ${price0} ETH`);
     }
     
     const market = await storage.createMarket({
@@ -108,12 +109,20 @@ export async function settleMarket(marketId: string) {
         console.log(`Simulated ending price (API unavailable): $${price1}`);
       }
     } else {
-      // For NFTs, simulate price movement
-      const randomFactor = (Math.random() - 0.5) * 2;
-      const actualMove = thresholdPercent * (0.8 + randomFactor * 0.6);
-      price1 = market.direction === "UP"
-        ? price0 * (1 + actualMove / 100)
-        : price0 * (1 - actualMove / 100);
+      // For NFTs, get ending floor price (currently simulated)
+      const realFloor = await getFloorPriceOrFallback(market.assetId);
+      if (realFloor) {
+        price1 = parseFloat(realFloor);
+        console.log(`Real ending floor price for ${market.assetName}: ${price1} ETH`);
+      } else {
+        // Fallback: simulate if API fails
+        const randomFactor = (Math.random() - 0.5) * 2;
+        const actualMove = thresholdPercent * (0.8 + randomFactor * 0.6);
+        price1 = market.direction === "UP"
+          ? price0 * (1 + actualMove / 100)
+          : price0 * (1 - actualMove / 100);
+        console.log(`Simulated ending floor price (API unavailable): ${price1} ETH`);
+      }
     }
     
     // Determine winner

@@ -7,6 +7,7 @@ import { PredictionCard } from "@/components/PredictionCard";
 import { BetPanel } from "@/components/BetPanel";
 import { ProphetChatDrawer } from "@/components/ProphetChatDrawer";
 import { MarketsTimeline } from "@/components/MarketsTimeline";
+import { PastMarkets } from "@/components/PastMarkets";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +29,15 @@ export default function Home() {
     queryKey: ["/api/market/today"],
     enabled: true,
   });
+
+  // Fetch all markets to show past ones
+  const { data: allMarkets = [] } = useQuery<Market[]>({
+    queryKey: ["/api/markets"],
+    enabled: true,
+  });
+
+  // Filter past markets (settled)
+  const pastMarkets = allMarkets.filter(m => m.status === "SETTLED" || m.status === "REFUND").slice(0, 5);
 
   // Fetch user balance
   const { data: balanceData } = useQuery<{ balance: string }>({
@@ -332,6 +342,11 @@ export default function Home() {
 
         {/* Markets Timeline */}
         <MarketsTimeline />
+
+        {/* Past Markets */}
+        <div className="max-w-5xl mx-auto">
+          <PastMarkets markets={pastMarkets} />
+        </div>
 
         {/* Disclaimer */}
         <div className="text-center text-sm text-muted-foreground border-t border-border pt-8">
