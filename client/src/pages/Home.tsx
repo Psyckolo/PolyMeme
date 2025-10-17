@@ -1,15 +1,15 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { Link } from "wouter";
 import { GlitchText } from "@/components/GlitchText";
 import { ParticleField } from "@/components/ParticleField";
 import { PredictionCard } from "@/components/PredictionCard";
 import { BetPanel } from "@/components/BetPanel";
 import { ProphetChatDrawer } from "@/components/ProphetChatDrawer";
-import { MetaMaskGuide } from "@/components/MetaMaskGuide";
-import { WalletDiagnostic } from "@/components/WalletDiagnostic";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, Ghost, LogOut } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Wallet, Ghost, LogOut, LayoutDashboard, TrendingUp, Shield, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Market } from "@shared/schema";
@@ -75,105 +75,17 @@ export default function Home() {
   };
 
   const handleConnect = async () => {
-    // Check if MetaMask is installed
-    if (!window.ethereum) {
-      toast({
-        title: "⚠️ MetaMask Non Installé",
-        description: "Installez MetaMask puis rafraîchissez la page.",
-        variant: "destructive",
-      });
-      window.open('https://metamask.io/download/', '_blank');
-      return;
-    }
-
-    // Diagnostic: Find MetaMask provider
-    let metaMaskProvider = null;
-    const providers = (window.ethereum as any).providers;
-    
-    if (Array.isArray(providers) && providers.length > 0) {
-      // Multiple wallets detected - find MetaMask
-      metaMaskProvider = providers.find((p: any) => p.isMetaMask);
-      
-      if (!metaMaskProvider) {
-        toast({
-          title: "⚠️ Conflit de Wallets",
-          description: "Désactivez les autres wallets et gardez seulement MetaMask. Allez dans chrome://extensions",
-          variant: "destructive",
-          duration: 8000,
-        });
-        return;
-      }
-      
-      console.log(`Found MetaMask among ${providers.length} providers`);
-    } else if ((window.ethereum as any).isMetaMask) {
-      metaMaskProvider = window.ethereum;
-      console.log("Using direct MetaMask provider");
-    } else {
-      toast({
-        title: "⚠️ MetaMask Non Détecté",
-        description: "Vérifiez que MetaMask est installé et activé. Désactivez les autres wallets.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if MetaMask is locked
-    try {
-      const accounts = await metaMaskProvider.request({ method: 'eth_accounts' });
-      if (!accounts || accounts.length === 0) {
-        toast({
-          title: "🔒 MetaMask Verrouillé",
-          description: "Cliquez sur l'icône 🦊 MetaMask et entrez votre mot de passe pour déverrouiller.",
-          variant: "destructive",
-          duration: 8000,
-        });
-        return;
-      }
-    } catch (error: any) {
-      console.error("MetaMask locked check failed:", error);
-      toast({
-        title: "🔒 MetaMask Verrouillé ou Erreur",
-        description: "Déverrouillez MetaMask puis réessayez.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Everything checks out - try to connect
-    const metaMaskConnector = connectors.find(c => c.id === 'injected' || c.name === 'MetaMask');
+    const metaMaskConnector = connectors.find(c => c.id === 'injected');
     if (metaMaskConnector) {
       try {
-        console.log("Attempting to connect MetaMask...");
         await connect({ connector: metaMaskConnector });
-        toast({
-          title: "✅ Wallet Connecté",
-          description: "Votre wallet MetaMask est maintenant connecté.",
-        });
       } catch (error: any) {
-        console.error("MetaMask connection error:", error);
-        
-        // More helpful error messages
-        let errorMsg = "Impossible de se connecter. Vérifiez que MetaMask est déverrouillé.";
-        if (error.message?.includes("User rejected")) {
-          errorMsg = "Connexion annulée. Veuillez approuver la connexion dans MetaMask.";
-        } else if (error.message?.includes("already processing")) {
-          errorMsg = "Une demande de connexion est déjà en cours. Vérifiez MetaMask.";
-        } else if (error.message?.includes("account")) {
-          errorMsg = "MetaMask est verrouillé. Déverrouillez-le et réessayez.";
-        }
-        
         toast({
-          title: "❌ Erreur de Connexion",
-          description: errorMsg,
+          title: "Connection Failed",
+          description: error.message || "Please try again",
           variant: "destructive",
         });
       }
-    } else {
-      toast({
-        title: "⚠️ Connecteur Non Trouvé",
-        description: "Impossible de trouver le connecteur MetaMask.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -235,6 +147,15 @@ export default function Home() {
           </div>
           
           <div className="flex items-center gap-3">
+            {isConnected && (
+              <Link href="/dashboard" data-testid="link-dashboard">
+                <Button variant="outline" size="sm">
+                  <LayoutDashboard className="w-4 h-4 mr-2" />
+                  Dashboard
+                </Button>
+              </Link>
+            )}
+            
             {isConnected ? (
               <div className="flex items-center gap-2">
                 <Badge variant="default" className="font-mono" data-testid="badge-wallet-address">
@@ -254,33 +175,18 @@ export default function Home() {
                 onClick={handleConnect} 
                 variant="default"
                 className="bg-primary hover:bg-primary"
-                data-testid="button-connect-metamask"
+                data-testid="button-connect-wallet"
               >
                 <Wallet className="w-4 h-4 mr-2" />
-                Connect MetaMask
+                Connect Wallet
               </Button>
             )}
-            
-            <Button
-              variant="outline"
-              disabled
-              className="opacity-40 cursor-not-allowed"
-              data-testid="button-connect-phantom"
-            >
-              <Ghost className="w-4 h-4 mr-2" />
-              Phantom
-              <Badge variant="secondary" className="ml-2 text-xs">Soon</Badge>
-            </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-4 py-12 space-y-12">
-        {/* Complete wallet diagnostic */}
-        <WalletDiagnostic />
-        <MetaMaskGuide />
-        
         {/* Hero Section */}
         <div className="text-center space-y-6 max-w-4xl mx-auto">
           <h2 className="text-5xl md:text-7xl font-black font-display tracking-tight">
@@ -293,6 +199,45 @@ export default function Home() {
             {" "}or{" "}
             <span className="text-[hsl(var(--neon-cyan))] font-bold">if it's WRONG</span>.
           </p>
+        </div>
+
+        {/* How It Works */}
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <Card className="bg-card/50 backdrop-blur-sm border-border" data-testid="card-how-it-works-1">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-lg bg-[hsl(var(--neon-cyan))]/20 flex items-center justify-center mb-3">
+                <TrendingUp className="w-6 h-6 text-[hsl(var(--neon-cyan))]" />
+              </div>
+              <CardTitle className="text-lg">AI Prediction</CardTitle>
+              <CardDescription>
+                GPT-5 analyzes market data and makes one daily prediction on crypto assets
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="bg-card/50 backdrop-blur-sm border-border" data-testid="card-how-it-works-2">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-lg bg-[hsl(var(--neon-magenta))]/20 flex items-center justify-center mb-3">
+                <Zap className="w-6 h-6 text-[hsl(var(--neon-magenta))]" />
+              </div>
+              <CardTitle className="text-lg">Place Your Bet</CardTitle>
+              <CardDescription>
+                Bet USDC on AI RIGHT or AI WRONG. Pools close after 24 hours
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="bg-card/50 backdrop-blur-sm border-border" data-testid="card-how-it-works-3">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-3">
+                <Shield className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle className="text-lg">Win & Claim</CardTitle>
+              <CardDescription>
+                Winners split the losing pool proportionally. Claim anytime in Dashboard
+              </CardDescription>
+            </CardHeader>
+          </Card>
         </div>
 
         {/* Today's Prediction Card */}

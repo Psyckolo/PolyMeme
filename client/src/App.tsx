@@ -4,7 +4,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from 'wagmi';
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { HideErrorOverlay } from "@/components/HideErrorOverlay";
 import { config } from "./lib/wagmi";
 import Home from "@/pages/Home";
 import Dashboard from "@/pages/Dashboard";
@@ -25,7 +24,6 @@ function App() {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <HideErrorOverlay />
           <Toaster />
           <Router />
         </TooltipProvider>
