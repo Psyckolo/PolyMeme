@@ -74,21 +74,38 @@ export default function Home() {
   };
 
   const handleConnect = async () => {
+    // Check if MetaMask is installed
+    if (!window.ethereum) {
+      toast({
+        title: "MetaMask Non Installé",
+        description: "Veuillez installer l'extension MetaMask pour continuer.",
+        variant: "destructive",
+      });
+      window.open('https://metamask.io/download/', '_blank');
+      return;
+    }
+
     const metaMaskConnector = connectors.find(c => c.id === 'injected' || c.name === 'MetaMask');
     if (metaMaskConnector) {
       try {
-        connect({ connector: metaMaskConnector });
-      } catch (error) {
+        console.log("Attempting to connect MetaMask...");
+        await connect({ connector: metaMaskConnector });
         toast({
-          title: "Connection Failed",
-          description: "Please make sure MetaMask is installed.",
+          title: "Wallet Connecté",
+          description: "Votre wallet MetaMask est maintenant connecté.",
+        });
+      } catch (error: any) {
+        console.error("MetaMask connection error:", error);
+        toast({
+          title: "Erreur de Connexion",
+          description: error.message || "Impossible de se connecter. Vérifiez que MetaMask est déverrouillé.",
           variant: "destructive",
         });
       }
     } else {
       toast({
-        title: "MetaMask Not Found",
-        description: "Please install MetaMask browser extension.",
+        title: "MetaMask Non Trouvé",
+        description: "Impossible de trouver le connecteur MetaMask.",
         variant: "destructive",
       });
     }
