@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { Link } from "wouter";
@@ -24,19 +25,24 @@ export default function Home() {
   const { toast } = useToast();
   const userAddress = address || "";
 
-  // Fetch today's market
-  const { data: market, isLoading: marketLoading } = useQuery<Market>({
-    queryKey: ["/api/market/today"],
-    enabled: true,
-  });
-
-  // Fetch all markets to show past ones
-  const { data: allMarkets = [] } = useQuery<Market[]>({
+  // Fetch all markets
+  const { data: allMarkets = [], isLoading: marketsLoading } = useQuery<Market[]>({
     queryKey: ["/api/markets"],
     enabled: true,
   });
 
-  // Filter past markets (settled)
+  // Selected market state (default to most recent)
+  const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
+
+  // Set initial selected market to most recent when markets load
+  useEffect(() => {
+    if (allMarkets.length > 0 && !selectedMarket) {
+      setSelectedMarket(allMarkets[0]);
+    }
+  }, [allMarkets, selectedMarket]);
+
+  // Filter active and past markets
+  const activeMarkets = allMarkets.filter(m => m.status === "OPEN");
   const pastMarkets = allMarkets.filter(m => m.status === "SETTLED" || m.status === "REFUND").slice(0, 5);
 
   // Fetch user balance
@@ -49,7 +55,7 @@ export default function Home() {
   const placeBetMutation = useMutation({
     mutationFn: async ({ side, amount }: { side: "RIGHT" | "WRONG"; amount: string }) => {
       return apiRequest("POST", "/api/bet", {
-        marketId: market?.id,
+        marketId: selectedMarket?.id,
         userAddress,
         side,
         amount,
@@ -57,7 +63,7 @@ export default function Home() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/balance", userAddress] });
-      queryClient.invalidateQueries({ queryKey: ["/api/market/today"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/markets"] });
       queryClient.invalidateQueries({ queryKey: ["/api/positions", userAddress] });
       toast({
         title: "Bet Placed!",
@@ -132,7 +138,7 @@ export default function Home() {
 
   const handleAskProphet = async (question: string): Promise<string> => {
     try {
-      const res = await apiRequest("POST", "/api/chat", { question, marketId: market?.id });
+      const res = await apiRequest("POST", "/api/chat", { question, marketId: selectedMarket?.id });
       const data = await res.json();
       console.log("Chat response received:", data);
       console.log("Answer value:", data.answer, "Type:", typeof data.answer);
@@ -175,7 +181,7 @@ export default function Home() {
               <GlitchText text="ProphetX" className="text-3xl" />
             </h1>
             <Badge variant="outline" className="text-xs" data-testid="badge-data-mode">
-              {market?.status === "SETTLED" ? "Live Data" : "Simulated"}
+              {selectedMarket?.status === "SETTLED" ? "Live Data" : "Simulated"}
             </Badge>
           </div>
           
@@ -273,12 +279,12 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* Today's Prediction Card - Active Bet */}
-        <PredictionCard market={market || null} isLoading={marketLoading} />
+        {/* Selected Market Prediction Card */}
+        <PredictionCard market={selectedMarket} isLoading={marketsLoading} />
 
         {/* Bet Panel */}
         <BetPanel
-          market={market || null}
+          market={selectedMarket}
           userBalance={balanceData?.balance || "0"}
           isConnected={isConnected}
           onBet={handleBet}
@@ -341,7 +347,10 @@ export default function Home() {
         </Card>
 
         {/* Markets Timeline */}
-        <MarketsTimeline />
+        <MarketsTimeline 
+          selectedMarketId={selectedMarket?.id}
+          onSelectMarket={setSelectedMarket}
+        />
 
         {/* Past Markets */}
         <div className="max-w-5xl mx-auto">

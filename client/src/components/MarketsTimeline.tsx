@@ -5,7 +5,12 @@ import type { Market } from "@shared/schema";
 import { ArrowUp, ArrowDown, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { Link } from "wouter";
 
-export function MarketsTimeline() {
+interface MarketsTimelineProps {
+  selectedMarketId?: string;
+  onSelectMarket?: (market: Market) => void;
+}
+
+export function MarketsTimeline({ selectedMarketId, onSelectMarket }: MarketsTimelineProps) {
   const { data: markets = [], isLoading } = useQuery<Market[]>({
     queryKey: ['/api/markets'],
   });
@@ -39,10 +44,16 @@ export function MarketsTimeline() {
   const MarketCard = ({ market }: { market: Market }) => {
     const status = getMarketStatus(market);
     const thresholdPercent = (market.thresholdBps / 100).toFixed(1);
+    const isSelected = selectedMarketId === market.id;
 
     return (
       <div 
-        className="p-4 rounded-lg border border-border bg-muted/20 hover-elevate cursor-pointer transition-all"
+        className={`p-4 rounded-lg border transition-all ${
+          isSelected 
+            ? "border-primary bg-primary/10 ring-2 ring-primary/50" 
+            : "border-border bg-muted/20 hover-elevate cursor-pointer"
+        }`}
+        onClick={() => onSelectMarket?.(market)}
         data-testid={`market-${market.id}`}
       >
         <div className="flex items-center justify-between mb-2">
