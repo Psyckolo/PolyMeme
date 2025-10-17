@@ -25,6 +25,22 @@ export default function Home() {
   const { toast } = useToast();
   const userAddress = address || "";
 
+  // Track previous connection state to show toast only on new connections
+  const [wasConnected, setWasConnected] = useState(false);
+
+  // Show success toast when connection state changes from false to true
+  useEffect(() => {
+    if (isConnected && !wasConnected) {
+      toast({
+        title: "Wallet Connected",
+        description: "Successfully connected to your wallet",
+      });
+      setWasConnected(true);
+    } else if (!isConnected && wasConnected) {
+      setWasConnected(false);
+    }
+  }, [isConnected, wasConnected, toast]);
+
   // Fetch all markets
   const { data: allMarkets = [], isLoading: marketsLoading } = useQuery<Market[]>({
     queryKey: ["/api/markets"],
@@ -114,12 +130,16 @@ export default function Home() {
     try {
       console.log("Connecting with connector:", metaMaskConnector.id, metaMaskConnector.name);
       await connect({ connector: metaMaskConnector });
-      toast({
-        title: "Wallet Connected",
-        description: "Successfully connected to your wallet",
-      });
+      // Success toast will be shown by useEffect when isConnected changes to true
     } catch (error: any) {
       console.error("Connection error:", error);
+      
+      // Don't show error if user rejected the request
+      if (error.message?.includes("User rejected") || error.message?.includes("User denied") || error.code === 4001) {
+        console.log("User cancelled connection");
+        return;
+      }
+      
       toast({
         title: "Connection Failed",
         description: error.message || "Please try again",
