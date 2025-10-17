@@ -172,12 +172,68 @@ export async function lockMarket(marketId: string) {
 
 export async function createMultipleMarkets(count: number = 4) {
   console.log(`Creating ${count} markets...`);
-  for (let i = 0; i < count; i++) {
-    await createDailyMarket();
+  
+  // Shuffle assets to ensure diversity
+  const shuffledAssets = [...ASSETS].sort(() => Math.random() - 0.5);
+  const assetsToUse = shuffledAssets.slice(0, Math.min(count, ASSETS.length));
+  
+  for (const asset of assetsToUse) {
+    const direction = Math.random() > 0.5 ? "UP" : "DOWN";
+    const thresholdBps = Math.random() > 0.7 ? 300 : 500;
+    
+    const now = new Date();
+    const startTime = new Date(now);
+    const lockTime = new Date(now);
+    lockTime.setHours(lockTime.getHours() + 24);
+    const endTime = new Date(now);
+    endTime.setHours(endTime.getHours() + 48);
+    
+    // Get real price
+    let price0 = "0";
+    if (asset.type === "TOKEN") {
+      price0 = await getPriceOrFallback(asset.id);
+      console.log(`${asset.name} starting price: $${price0}`);
+    } else {
+      price0 = await getFloorPriceOrFallback(asset.id);
+      console.log(`${asset.name} starting floor price: ${price0} ETH`);
+    }
+    
+    const market = await storage.createMarket({
+      assetType: asset.type,
+      assetId: asset.id,
+      assetName: asset.name,
+      assetLogo: asset.logo,
+      direction,
+      thresholdBps,
+      startTime,
+      lockTime,
+      endTime,
+      price0,
+      price1: null,
+    });
+    
+    // Generate AI rationale
+    const rationaleData = await generateRationale(
+      asset.type,
+      asset.name,
+      direction,
+      thresholdBps / 100,
+      "simulate"
+    );
+    
+    await storage.createRationale({
+      marketId: market.id,
+      content: JSON.stringify(rationaleData.bullets),
+      dataMode: "simulate",
+    });
+    
+    console.log(`Market created: ${asset.name} ${direction} ${thresholdBps / 100}%`);
+    
     // Small delay between creations
     await new Promise(resolve => setTimeout(resolve, 500));
   }
-  console.log(`${count} markets created`);
+  
+  console.log(`${assetsToUse.length} markets created`);
 }
 
 export function startMarketScheduler() {
