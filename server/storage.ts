@@ -9,8 +9,15 @@ import {
   type InsertRationale,
   type UserStats,
   type InsertUserStats,
+  markets,
+  balances,
+  bets,
+  rationales,
+  userStats,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { eq, desc, sql } from "drizzle-orm";
+import { db } from "./db";
 
 export interface IStorage {
   // Markets
@@ -247,4 +254,246 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  // Markets
+  async createMarket(insertMarket: InsertMarket): Promise<Market> {
+    // Get the next marketId by finding the max marketId and adding 1
+    const result = await db
+      .select({ maxId: sql<number>`COALESCE(MAX(${markets.marketId}), 0)` })
+      .from(markets);
+    const nextMarketId = (result[0]?.maxId || 0) + 1;
+
+    const [market] = await db
+      .insert(markets)
+      .values({
+        ...insertMarket,
+        marketId: nextMarketId,
+        assetLogo: insertMarket.assetLogo || null,
+        thresholdBps: insertMarket.thresholdBps || 500,
+        price0: insertMarket.price0 || null,
+        price1: insertMarket.price1 || null,
+        poolRight: "0",
+        poolWrong: "0",
+        status: "OPEN",
+        winner: null,
+        settledAt: null,
+      })
+      .returning();
+    
+    return market;
+  }
+
+  async getMarket(id: string): Promise<Market | undefined> {
+    const [market] = await db
+      .select()
+      .from(markets)
+      .where(eq(markets.id, id));
+    
+    return market;
+  }
+
+  async getMarketByMarketId(marketId: number): Promise<Market | undefined> {
+    const [market] = await db
+      .select()
+      .from(markets)
+      .where(eq(markets.marketId, marketId));
+    
+    return market;
+  }
+
+  async getTodayMarket(): Promise<Market | undefined> {
+    const [market] = await db
+      .select()
+      .from(markets)
+      .orderBy(desc(markets.createdAt))
+      .limit(1);
+    
+    return market;
+  }
+
+  async getAllMarkets(): Promise<Market[]> {
+    return await db
+      .select()
+      .from(markets)
+      .orderBy(desc(markets.createdAt));
+  }
+
+  async updateMarket(id: string, updates: Partial<Market>): Promise<Market | undefined> {
+    const [updated] = await db
+      .update(markets)
+      .set(updates)
+      .where(eq(markets.id, id))
+      .returning();
+    
+    return updated;
+  }
+
+  // Balances
+  async getBalance(userAddress: string): Promise<Balance | undefined> {
+    const [balance] = await db
+      .select()
+      .from(balances)
+      .where(eq(balances.userAddress, userAddress.toLowerCase()));
+    
+    return balance;
+  }
+
+  async createOrUpdateBalance(userAddress: string, balance: string): Promise<Balance> {
+    const key = userAddress.toLowerCase();
+    const existing = await this.getBalance(key);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(balances)
+        .set({ balance, updatedAt: new Date() })
+        .where(eq(balances.userAddress, key))
+        .returning();
+      
+      return updated;
+    }
+    
+    const [newBalance] = await db
+      .insert(balances)
+      .values({
+        userAddress: key,
+        balance,
+      })
+      .returning();
+    
+    return newBalance;
+  }
+
+  async updateBalance(userAddress: string, newBalance: string): Promise<Balance | undefined> {
+    return this.createOrUpdateBalance(userAddress, newBalance);
+  }
+
+  // Bets
+  async createBet(insertBet: InsertBet): Promise<Bet> {
+    const [bet] = await db
+      .insert(bets)
+      .values({
+        ...insertBet,
+        claimed: false,
+        payout: null,
+      })
+      .returning();
+    
+    return bet;
+  }
+
+  async getBet(id: string): Promise<Bet | undefined> {
+    const [bet] = await db
+      .select()
+      .from(bets)
+      .where(eq(bets.id, id));
+    
+    return bet;
+  }
+
+  async getUserBets(userAddress: string): Promise<Bet[]> {
+    return await db
+      .select()
+      .from(bets)
+      .where(eq(bets.userAddress, userAddress.toLowerCase()))
+      .orderBy(desc(bets.createdAt));
+  }
+
+  async getMarketBets(marketId: string): Promise<Bet[]> {
+    return await db
+      .select()
+      .from(bets)
+      .where(eq(bets.marketId, marketId));
+  }
+
+  async updateBet(id: string, updates: Partial<Bet>): Promise<Bet | undefined> {
+    const [updated] = await db
+      .update(bets)
+      .set(updates)
+      .where(eq(bets.id, id))
+      .returning();
+    
+    return updated;
+  }
+
+  // Rationales
+  async createRationale(insertRationale: InsertRationale): Promise<Rationale> {
+    const [rationale] = await db
+      .insert(rationales)
+      .values(insertRationale)
+      .returning();
+    
+    return rationale;
+  }
+
+  async getRationale(marketId: string): Promise<Rationale | undefined> {
+    const [rationale] = await db
+      .select()
+      .from(rationales)
+      .where(eq(rationales.marketId, marketId));
+    
+    return rationale;
+  }
+
+  // User Stats
+  async getUserStats(userAddress: string): Promise<UserStats | undefined> {
+    const [stats] = await db
+      .select()
+      .from(userStats)
+      .where(eq(userStats.userAddress, userAddress.toLowerCase()));
+    
+    return stats;
+  }
+
+  async createOrUpdateUserStats(userAddress: string, updates: Partial<UserStats>): Promise<UserStats> {
+    const key = userAddress.toLowerCase();
+    const existing = await this.getUserStats(key);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(userStats)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(userStats.userAddress, key))
+        .returning();
+      
+      return updated;
+    }
+    
+    const [newStats] = await db
+      .insert(userStats)
+      .values({
+        userAddress: key,
+        totalBets: updates.totalBets ?? 0,
+        wonBets: updates.wonBets ?? 0,
+        totalWagered: updates.totalWagered ?? "0",
+        totalWinnings: updates.totalWinnings ?? "0",
+        currentStreak: updates.currentStreak ?? 0,
+        bestStreak: updates.bestStreak ?? 0,
+        points: updates.points ?? 0,
+        volumeTraded: updates.volumeTraded ?? "0",
+        referralCode: updates.referralCode ?? null,
+        referredBy: updates.referredBy ?? null,
+        referralCount: updates.referralCount ?? 0,
+      })
+      .returning();
+    
+    return newStats;
+  }
+  
+  async getAllUserStats(): Promise<UserStats[]> {
+    return await db
+      .select()
+      .from(userStats)
+      .orderBy(desc(userStats.points));
+  }
+  
+  async getUserByReferralCode(code: string): Promise<UserStats | undefined> {
+    const [stats] = await db
+      .select()
+      .from(userStats)
+      .where(eq(userStats.referralCode, code));
+    
+    return stats;
+  }
+}
+
+export const storage = new DatabaseStorage();
