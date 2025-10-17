@@ -1,0 +1,177 @@
+import { sql } from "drizzle-orm";
+import { pgTable, text, varchar, integer, bigint, timestamp, boolean } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+// Market statuses
+export const MarketStatus = {
+  OPEN: "OPEN",
+  LOCKED: "LOCKED",
+  SETTLED: "SETTLED",
+  REFUND: "REFUND",
+} as const;
+
+export const AssetType = {
+  TOKEN: "TOKEN",
+  NFT: "NFT",
+} as const;
+
+export const Direction = {
+  UP: "UP",
+  DOWN: "DOWN",
+} as const;
+
+export const Winner = {
+  RIGHT: "RIGHT",
+  WRONG: "WRONG",
+  TIE: "TIE",
+} as const;
+
+export const BetSide = {
+  RIGHT: "RIGHT",
+  WRONG: "WRONG",
+} as const;
+
+export const DataMode = {
+  ANALYTICS: "analytics",
+  SIMULATE: "simulate",
+} as const;
+
+// Markets table
+export const markets = pgTable("markets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  marketId: integer("market_id").notNull().unique(),
+  assetType: text("asset_type").notNull(), // TOKEN or NFT
+  assetId: text("asset_id").notNull(), // coingecko id or collection slug
+  assetName: text("asset_name").notNull(),
+  assetLogo: text("asset_logo"),
+  direction: text("direction").notNull(), // UP or DOWN
+  thresholdBps: integer("threshold_bps").notNull().default(500), // basis points (500 = 5%)
+  startTime: timestamp("start_time").notNull(),
+  lockTime: timestamp("lock_time").notNull(),
+  endTime: timestamp("end_time").notNull(),
+  price0: text("price0"), // starting price (stored as string to avoid precision issues)
+  price1: text("price1"), // ending price
+  poolRight: text("pool_right").notNull().default("0"),
+  poolWrong: text("pool_wrong").notNull().default("0"),
+  status: text("status").notNull().default("OPEN"), // OPEN, LOCKED, SETTLED, REFUND
+  winner: text("winner"), // RIGHT, WRONG, TIE
+  settledAt: timestamp("settled_at"),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+// User balances (internal ledger)
+export const balances = pgTable("balances", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userAddress: text("user_address").notNull().unique(),
+  balance: text("balance").notNull().default("0"), // USDC balance (6 decimals)
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+});
+
+// Bets (prediction positions)
+export const bets = pgTable("bets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  marketId: varchar("market_id").notNull().references(() => markets.id),
+  userAddress: text("user_address").notNull(),
+  side: text("side").notNull(), // RIGHT or WRONG
+  amount: text("amount").notNull(), // USDC amount
+  ticketId: text("ticket_id").notNull(), // ERC-1155 token ID (marketId * 10 + 1 or 2)
+  claimed: boolean("claimed").notNull().default(false),
+  payout: text("payout"), // calculated payout after settlement
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+// AI Rationales
+export const rationales = pgTable("rationales", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  marketId: varchar("market_id").notNull().references(() => markets.id),
+  content: text("content").notNull(), // JSON string with bullet points
+  dataMode: text("data_mode").notNull(), // analytics or simulate
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+// Leaderboard stats
+export const userStats = pgTable("user_stats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userAddress: text("user_address").notNull().unique(),
+  totalBets: integer("total_bets").notNull().default(0),
+  wonBets: integer("won_bets").notNull().default(0),
+  totalWagered: text("total_wagered").notNull().default("0"),
+  totalWinnings: text("total_winnings").notNull().default("0"),
+  currentStreak: integer("current_streak").notNull().default(0),
+  bestStreak: integer("best_streak").notNull().default(0),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+});
+
+// Insert schemas
+export const insertMarketSchema = createInsertSchema(markets).omit({
+  id: true,
+  createdAt: true,
+  settledAt: true,
+});
+
+export const insertBalanceSchema = createInsertSchema(balances).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const insertBetSchema = createInsertSchema(bets).omit({
+  id: true,
+  createdAt: true,
+  claimed: true,
+  payout: true,
+});
+
+export const insertRationaleSchema = createInsertSchema(rationales).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserStatsSchema = createInsertSchema(userStats).omit({
+  id: true,
+  updatedAt: true,
+});
+
+// Types
+export type Market = typeof markets.$inferSelect;
+export type InsertMarket = z.infer<typeof insertMarketSchema>;
+
+export type Balance = typeof balances.$inferSelect;
+export type InsertBalance = z.infer<typeof insertBalanceSchema>;
+
+export type Bet = typeof bets.$inferSelect;
+export type InsertBet = z.infer<typeof insertBetSchema>;
+
+export type Rationale = typeof rationales.$inferSelect;
+export type InsertRationale = z.infer<typeof insertRationaleSchema>;
+
+export type UserStats = typeof userStats.$inferSelect;
+export type InsertUserStats = z.infer<typeof insertUserStatsSchema>;
+
+// API request/response types
+export const depositSchema = z.object({
+  userAddress: z.string(),
+  amount: z.string(),
+});
+
+export const withdrawSchema = z.object({
+  userAddress: z.string(),
+  amount: z.string(),
+});
+
+export const placeBetSchema = z.object({
+  marketId: z.string(),
+  userAddress: z.string(),
+  side: z.enum(["RIGHT", "WRONG"]),
+  amount: z.string(),
+});
+
+export const claimSchema = z.object({
+  marketId: z.string(),
+  userAddress: z.string(),
+});
+
+export type DepositRequest = z.infer<typeof depositSchema>;
+export type WithdrawRequest = z.infer<typeof withdrawSchema>;
+export type PlaceBetRequest = z.infer<typeof placeBetSchema>;
+export type ClaimRequest = z.infer<typeof claimSchema>;
