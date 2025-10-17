@@ -76,7 +76,14 @@ export default function Home() {
 
   const handleConnect = async () => {
     console.log("Connect button clicked, connectors:", connectors);
-    const metaMaskConnector = connectors.find(c => c.id === 'injected');
+    console.log("Connector IDs:", connectors.map(c => ({ id: c.id, name: c.name, type: c.type })));
+    
+    // Try to find MetaMask connector by ID or just use the first available
+    const metaMaskConnector = connectors.find(c => 
+      c.id === 'injected' || 
+      c.id === 'io.metamask' || 
+      c.type === 'injected'
+    ) || connectors[0];
     
     if (!metaMaskConnector) {
       toast({
@@ -88,7 +95,7 @@ export default function Home() {
     }
 
     try {
-      console.log("Connecting with connector:", metaMaskConnector);
+      console.log("Connecting with connector:", metaMaskConnector.id, metaMaskConnector.name);
       await connect({ connector: metaMaskConnector });
       toast({
         title: "Wallet Connected",
