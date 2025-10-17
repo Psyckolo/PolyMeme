@@ -262,6 +262,18 @@ export default function Home() {
           </Card>
         </div>
 
+        {/* Today's Prediction Card - Active Bet */}
+        <PredictionCard market={market || null} isLoading={marketLoading} />
+
+        {/* Bet Panel */}
+        <BetPanel
+          market={market || null}
+          userBalance={balanceData?.balance || "0"}
+          isConnected={isConnected}
+          onBet={handleBet}
+          onConnect={handleConnect}
+        />
+
         {/* Recent Activity */}
         <Card className="max-w-5xl mx-auto bg-card/50 backdrop-blur-sm border-border" data-testid="card-recent-activity">
           <CardHeader>
@@ -316,18 +328,6 @@ export default function Home() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Today's Prediction Card */}
-        <PredictionCard market={market || null} isLoading={marketLoading} />
-
-        {/* Bet Panel */}
-        <BetPanel
-          market={market || null}
-          userBalance={balanceData?.balance || "0"}
-          isConnected={isConnected}
-          onBet={handleBet}
-          onConnect={handleConnect}
-        />
 
         {/* Disclaimer */}
         <div className="text-center text-sm text-muted-foreground border-t border-border pt-8">
