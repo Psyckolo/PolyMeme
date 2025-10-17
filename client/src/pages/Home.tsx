@@ -6,6 +6,7 @@ import { PredictionCard } from "@/components/PredictionCard";
 import { BetPanel } from "@/components/BetPanel";
 import { ProphetChatDrawer } from "@/components/ProphetChatDrawer";
 import { MetaMaskGuide } from "@/components/MetaMaskGuide";
+import { WalletConflictGuide } from "@/components/WalletConflictGuide";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, Ghost, LogOut } from "lucide-react";
@@ -85,6 +86,17 @@ export default function Home() {
       return;
     }
 
+    // Try to get MetaMask specifically if multiple wallets exist
+    let provider = window.ethereum;
+    if ((window.ethereum as any).providers?.length > 0) {
+      const providers = (window.ethereum as any).providers;
+      const metamaskProvider = providers.find((p: any) => p.isMetaMask);
+      if (metamaskProvider) {
+        provider = metamaskProvider;
+        console.log("Using MetaMask from providers array");
+      }
+    }
+
     const metaMaskConnector = connectors.find(c => c.id === 'injected' || c.name === 'MetaMask');
     if (metaMaskConnector) {
       try {
@@ -96,9 +108,18 @@ export default function Home() {
         });
       } catch (error: any) {
         console.error("MetaMask connection error:", error);
+        
+        // More helpful error messages
+        let errorMsg = "Impossible de se connecter. Vérifiez que MetaMask est déverrouillé.";
+        if (error.message?.includes("User rejected")) {
+          errorMsg = "Connexion annulée. Veuillez approuver la connexion dans MetaMask.";
+        } else if (error.message?.includes("already processing")) {
+          errorMsg = "Une demande de connexion est déjà en cours. Vérifiez MetaMask.";
+        }
+        
         toast({
           title: "Erreur de Connexion",
-          description: error.message || "Impossible de se connecter. Vérifiez que MetaMask est déverrouillé.",
+          description: errorMsg,
           variant: "destructive",
         });
       }
@@ -211,8 +232,9 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-4 py-12 space-y-12">
-        {/* MetaMask iframe warning */}
+        {/* Wallet warnings */}
         <MetaMaskGuide />
+        <WalletConflictGuide />
         
         {/* Hero Section */}
         <div className="text-center space-y-6 max-w-4xl mx-auto">
