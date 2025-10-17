@@ -161,10 +161,20 @@ export async function lockMarket(marketId: string) {
   }
 }
 
-export function startMarketScheduler() {
-  // Create daily market at 9 AM
-  cron.schedule("0 9 * * *", async () => {
+export async function createMultipleMarkets(count: number = 4) {
+  console.log(`Creating ${count} markets...`);
+  for (let i = 0; i < count; i++) {
     await createDailyMarket();
+    // Small delay between creations
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+  console.log(`${count} markets created`);
+}
+
+export function startMarketScheduler() {
+  // Create daily markets at 9 AM (4 markets)
+  cron.schedule("0 9 * * *", async () => {
+    await createMultipleMarkets(4);
   });
   
   // Check for markets to lock every 5 minutes
@@ -185,11 +195,16 @@ export function startMarketScheduler() {
   
   console.log("Market scheduler started");
   
-  // Create initial market if none exists
+  // Create initial markets if needed (ensure 4 active markets)
   setTimeout(async () => {
-    const todayMarket = await storage.getTodayMarket();
-    if (!todayMarket) {
-      await createDailyMarket();
+    const markets = await storage.getAllMarkets();
+    const activeMarkets = markets.filter(m => m.status === "OPEN");
+    
+    if (activeMarkets.length === 0) {
+      await createMultipleMarkets(4);
+    } else if (activeMarkets.length < 4) {
+      // Top up to 4 active markets
+      await createMultipleMarkets(4 - activeMarkets.length);
     }
   }, 1000);
 }
