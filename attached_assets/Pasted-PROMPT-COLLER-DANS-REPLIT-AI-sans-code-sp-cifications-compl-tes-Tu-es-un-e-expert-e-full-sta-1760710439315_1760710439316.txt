@@ -1,0 +1,322 @@
+PROMPT À COLLER DANS REPLIT AI (sans code, spécifications complètes)
+
+Tu es un(e) expert(e) full-stack Web3/IA. Crée un monorepo ai-prophet avec trois apps :
+
+packages/contracts : Hardhat + Solidity
+
+apps/oracle : Node/TypeScript (Express + cron) = Agent IA + Oracle
+
+apps/web : Next.js/TypeScript (Tailwind + Framer Motion + wagmi + RainbowKit + viem)
+
+Objectif produit (MVP)
+
+Une IA publie un pari unique par jour (NFT floor ou token price, direction UP/DOWN, seuil %).
+Les utilisateurs se connectent avec MetaMask, déposent/retirent des USDC, achètent un “prediction token” (reçu ERC-1155) côté AI RIGHT ou AI WRONG.
+Après 24h, l’oracle règle le marché; les gagnants claim (pari mutuel); chacun peut withdraw son solde non utilisé.
+
+Contraintes de simplicité
+
+EVM + MetaMask (réseau Base/Polygon ou localhost). Phantom/Solana = “coming soon” (UI visible, non actif).
+
+Analytics IA: si clés API dispos (OpenAI + Reservoir + DexScreener + option X/Twitter), utiliser le mode “Analytics”. Sinon, activer “Simulation réaliste” (l’agent IA génère une explication crédible et choisit des actifs cohérents).
+
+Concept ultra-clair: landing = 1 phrase + 1 carte pari du jour + 2 boutons “Bet AI RIGHT/WRONG”.
+
+1) Architecture & scripts
+
+Monorepo pnpm workspaces, Node 20.
+
+Scripts racine:
+
+pnpm chain : Hardhat local
+
+pnpm deploy : déploie USDC mock + PredictionMarket + PredictionTicket1155; écrit les adresses dans .env web & oracle
+
+pnpm oracle : lance Express + cron (IA + oracle)
+
+pnpm web : lance le front
+
+pnpm dev : chaîne locale + deploy + oracle + web en parallèle
+
+Fichiers .env.example :
+
+oracle:
+
+OPENAI_API_KEY=
+
+RESERVOIR_API_KEY=
+
+RPC_URL=http://127.0.0.1:8545
+
+CHAIN_ID=31337
+
+FACTORY_ADDRESS=
+
+TICKET_ADDRESS=
+
+USDC_ADDRESS=
+
+AI_DEFAULT_THRESHOLD_BPS=500
+
+MODE=analytics|simulate
+
+web:
+
+NEXT_PUBLIC_CHAIN_ID=31337
+
+NEXT_PUBLIC_FACTORY_ADDRESS=
+
+NEXT_PUBLIC_TICKET_ADDRESS=
+
+NEXT_PUBLIC_USDC_ADDRESS=
+
+NEXT_PUBLIC_BRAND=AI PROPHET
+
+NEXT_PUBLIC_ENABLE_PARTICLES=true
+
+2) Smart-contracts (fonctionnels, simples, robustes)
+2.1. USDC Mock (tests)
+
+ERC-20 décimales 6, mintable par owner.
+
+2.2. PredictionTicket1155 (reçus de pari)
+
+ERC-1155, URI configurable.
+
+Un “marketId” = 2 IDs de tokens :
+
+idRight = marketId * 10 + 1
+
+idWrong = marketId * 10 + 2
+
+Mint du reçu au moment du pari; burn à la réclamation (claim) pour éviter double claim.
+
+Permet au dashboard d’afficher les positions.
+
+Option: soulbound=false (transférable), mais UI déconseille le trade en MVP.
+
+2.3. PredictionMarket (contrat principal)
+
+Rôles & sécurité:
+
+AccessControl: DEFAULT_ADMIN_ROLE, ORACLE_ROLE, PAUSER_ROLE.
+
+ReentrancyGuard, Pausable, SafeERC20.
+
+Données par Market (struct):
+
+marketId, assetType (TOKEN|NFT), assetId (coingeckoId ou collection slug/adresse), direction (UP|DOWN), thresholdBps (base points, ex 500 = +5%),
+
+startTime, lockTime (T0+30min), endTime (T0+24h),
+
+price0 (ou floor0), price1 (ou floor1),
+
+poolRight, poolWrong, status (OPEN|LOCKED|SETTLED|REFUND), winner (RIGHT|WRONG|TIE).
+
+Gestion des fonds:
+
+Ledger interne par utilisateur: balances[addr] (USDC).
+
+Fonctions:
+
+deposit(amount) → crédit USDC (via transferFrom).
+
+withdraw(amount) → retire du solde interne vers wallet (toujours accessible hors fonds engagés).
+
+placeBet(marketId, side, amount) → débite balances[msg.sender] et crédite pool; mint le reçu ERC-1155 (idRight/idWrong).
+
+claim(marketId) → calcule payout pari mutuel si gagnant; brûle le reçu; crédite balances[msg.sender].
+
+withdrawAll() helper.
+
+Création & oracle:
+
+createMarket(assetType, assetId, direction, thresholdBps, startTime) → ADMIN only. Définit lockTime = start+30m, endTime = start+24h.
+
+oracleSubmitStart(marketId, price0) et oracleSubmitEnd(marketId, price1) → ORACLE_ROLE.
+
+settle(marketId) :
+
+calcule variation % = (price1 - price0) / max(price0, epsilon).
+
+compare à thresholdBps et direction pour déterminer winner.
+
+tie si variation == seuil (ou écart < 0.1%).
+
+refund(marketId) si données manquantes, pool < min, ou erreur.
+
+Frais:
+
+feeBps = 200 (2%).
+
+Prélevés au moment du claim sur le payout brut, envoyés à treasury.
+
+Événements:
+
+Deposited, Withdrew, MarketCreated, BetPlaced, Locked, SnapStart, SnapEnd, Settled, Refunded, Claimed, TicketMinted, TicketBurned.
+
+3) Oracle & Agent IA
+
+Serveur Node/Express:
+
+Endpoint public GET /market/today (lecture de l’état actuel), GET /rationale/:marketId (texte IA).
+
+Cron “matin” (ex. 09:00) :
+
+Choisir actif parmi liste blanche (ex: tokens: PEPE, WIF, DOGE | NFTs EVM: Milady, Pudgy, DeGods(ETH), etc.).
+
+Mode analytics (si clés) :
+
+Prix tokens: CoinGecko; tendance: DexScreener (option).
+
+Floors NFT: Reservoir.
+
+(Option X/Twitter: si indisponible, ignorer.)
+
+Décider UP/DOWN + thresholdBps (par défaut 500).
+
+Rédiger un rationale bref (4–6 puces) via OpenAI, sans chaîne de pensée.
+
+Mode simulate :
+
+Choisir actif & direction plausibles (basés sur volatilité historique fictive).
+
+Générer un rationale “réaliste”.
+
+Appeler createMarket(...) on-chain, puis snapshot price0 → oracleSubmitStart(...).
+
+Cron “T+24h” :
+
+Reprendre price1 / floor1 avec la même source.
+
+oracleSubmitEnd(...); appeler settle(...).
+
+Si source KO → refund(marketId).
+
+TWAP léger : 3 lectures en 10 minutes, médiane.
+
+DB locale (SQLite ou fichiers JSON) : stocker rationales, logs, marketIds.
+
+4) Front-end (UX hyper claire + design Degen)
+4.1. UX de base
+
+Hero épuré :
+Titre massif “AI PROPHET”
+Sous-titre clair: “Chaque jour, l’IA parie sur un NFT ou un token. Pariez si elle A RAISON ou si elle A TORT.”
+Bouton Connect Wallet (MetaMask). À côté: Phantom (coming soon) grisé.
+
+Carte “Today’s Prediction” (au centre, très grande) :
+
+Actif (logo + nom) / type (NFT ou Token)
+
+Direction (UP/DOWN) + seuil % (ex: +5%)
+
+Compte à rebours jusqu’à endTime et statut “Lock in 30:00” puis “Locked”
+
+Deux panneaux pool : “AI RIGHT” vs “AI WRONG” (montants, %)
+
+Deux gros boutons : “Bet AI RIGHT” / “Bet AI WRONG”
+
+Input montant (USDC) + lien “Deposit/Withdraw”
+
+CTA “Ask the Prophet” → ouvre un drawer/chat (à droite) :
+
+Prompt simple, réponses en 3–6 lignes, jamais de chaîne de pensée, ton analytique/froid, pas de conseils financiers.
+
+Bouton “Pourquoi ce choix ?” = affiche rationale enregistré par l’oracle.
+
+Dashboard / Portfolio
+
+Onglet “Positions” : liste des Prediction Tokens (ERC-1155) détenus (idRight/idWrong, marketId, côté, montant stake).
+
+Actions par ligne : “Claim” (si Settled gagnant), “View Market”, “Open Rationale”.
+
+Onglet “Balance USDC” : Deposit / Withdraw / Withdraw All (clairs, avec toasts).
+
+Onglet “Historique” : marchés passés, résultats (Right/Wrong/Tie), gains/pertes.
+
+Leaderboard (simple)
+
+Classement par % de prédictions gagnantes, gains totaux, victoires consécutives.
+
+Badges (Bronze/Argent/Or) visuels (purement cosmétiques).
+
+4.2. Design “full degen” (sans emojis)
+
+Direction artistique : affiche cyberpunk/underground, illustrations vectorielles (silhouettes, câbles, écrans cathodiques), grains/scanlines, bruit animé.
+
+Palette : noir profond (#0a0a0f), néons magenta/vert/bleu, accents blanc cassé.
+
+Typo : titres en display condensé (style poster), textes en grotesque moderne.
+
+Effets :
+
+Glitch subtil sur le mot “PROPHET”
+
+Halo néon autour des cartes (box-shadow animé)
+
+Particules discrètes (canvas), scanline overlay léger
+
+Transitions Framer Motion (fade/scale)
+
+Confettis uniquement sur Claim réussi
+
+Aucun emoji ; tout en ligne claire & affiche.
+
+Accessibilité : contrastes AA, hover/focus visibles, toasts sobres (succès/erreur).
+
+4.3. Composants clés (nommage)
+
+PredictionCard, PoolMeter, BetPanel, BalancePanel, PositionsTable, RationaleSheet, ProphetChatDrawer, CountdownBadge, NetworkGuard.
+
+5) Règles métier & garde-fous
+
+Clarté dès l’arrivée : 1 carte, 2 choix, un timer, un texte d’explication court.
+
+Lock des paris à startTime + 30min (anti-snipe).
+
+Min pool (configurable, ex 500 USDC) sinon REFUND.
+
+Frais 2% sur payout (trésor).
+
+Withdraw toujours possible pour le solde non engagé.
+
+TIE/REFUND : remboursement intégral (claim simple).
+
+Conformité : bannière “Jeu expérimental / Pas de conseil financier”.
+
+Mode Simulation par défaut si aucune clé; “Analytics Mode” bascule auto si clés valides.
+
+6) Parcours de test (local)
+
+pnpm dev → lance Hardhat + deploy + oracle + web.
+
+Sur la landing : Connect Wallet, Deposit un peu de USDC mock.
+
+Bet côté RIGHT ou WRONG (mint du prediction token visible dans Dashboard).
+
+Forcer un “settle rapide” (oracle a un mode dev pour avancer l’horloge ou raccourcir la durée).
+
+Claim → confettis → solde crédité → Withdraw vers wallet.
+
+7) Roadmap post-MVP
+
+Activer Phantom/Solana (programme Anchor miroir).
+
+Intégrer Twitter/X analytics réelles (si clé/accès).
+
+Chainlink Automation pour cron on-chain.
+
+Badges on-chain (ERC-1155 saison).
+
+Marchés multiples / archives paginées.
+
+8) Livrables attendus
+
+Contrats déployables, incl. deposit / bet / claim / withdraw et reçus ERC-1155.
+
+Oracle/Agent IA avec mode analytics (si clés) ou simulation (par défaut), + endpoints lecture.
+
+Front Next.js ultra clair (une carte, deux choix), dashboard positions + balance, chat IA explicatif, design degen illustré (sans emojis).
+
+Scripts Replit pour tout lancer en un clic.

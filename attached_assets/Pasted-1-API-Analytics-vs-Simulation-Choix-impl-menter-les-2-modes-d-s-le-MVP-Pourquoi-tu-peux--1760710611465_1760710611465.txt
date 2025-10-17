@@ -1,0 +1,73 @@
+1) API & “Analytics vs Simulation”
+
+Choix : implémenter les 2 modes dès le MVP.
+
+Pourquoi : tu peux faire une démo même sans clés, et basculer instantanément en “analytics” dès que tu as les clés.
+
+Comportement proposé :
+
+Si MODE=analytics et clés valides détectées → utiliser Reservoir/CoinGecko/DexScreener.
+
+Sinon → fallback automatique en simulate (mêmes écrans, mêmes flows).
+
+Signal UX : badge discret “Live data” ou “Simulated” dans le header.
+
+2) Réseau & déploiement
+
+Choix : localhost (Hardhat) par défaut, + configuration prête pour Base Sepolia (testnet) dès le jour 1.
+
+Pourquoi : tu testes tout en 1 clic localement, puis un simple switch d’ENV te permet de pousser sur un testnet sans re-architecturer.
+
+Concrètement :
+
+.env.local (web) et .env (oracle) prévus pour 31337 (local).
+
+Un fichier .env.base-sepolia.example fourni (RPC, chainId=84532, USDC test, etc.).
+
+Scripts deploy:local et deploy:base-sepolia pour remplacer les adresses dans le front et l’oracle.
+
+3) Phantom / Solana
+
+Choix : bouton “Phantom – Coming Soon” désactivé sur la landing (visible, non cliquable).
+
+Pourquoi : tu annonces clairement la roadmap sans alourdir le MVP ni créer de confusion.
+
+Détails UX :
+
+Tooltip “Solana support arriving soon”.
+
+Même design que Connect MetaMask pour cohérence, mais en état disabled.
+
+Ce que j’intègre concrètement dans le prompt Replit (sans code)
+
+Feature flags :
+
+MODE=analytics|simulate (fallback auto si clés manquantes).
+
+CHAIN=local|base-sepolia (défaut: local).
+
+ENABLE_PHANTOM=false (défaut), affiche bouton disabled si true.
+
+ENV matrix :
+
+apps/oracle/.env.example: OPENAI_API_KEY, RESERVOIR_API_KEY, COINGECKO_BASE_URL, DEXSCREENER_BASE_URL, MODE, RPC_URL, CHAIN_ID, FACTORY_ADDRESS, TICKET_ADDRESS, USDC_ADDRESS.
+
+apps/web/.env.local.example: NEXT_PUBLIC_CHAIN_ID, NEXT_PUBLIC_FACTORY_ADDRESS, NEXT_PUBLIC_TICKET_ADDRESS, NEXT_PUBLIC_USDC_ADDRESS, NEXT_PUBLIC_BRAND, NEXT_PUBLIC_ENABLE_PARTICLES, NEXT_PUBLIC_DATA_MODE (reflet du mode).
+
+Switch simple :
+
+Un panneau “Settings” (admin-only) permet de voir le mode actif, la chaîne, et un bouton “Run health check” (test clés/API).
+
+Mini checklist de livraison
+
+✅ Landing ultra claire : une carte “Today’s Prediction”, 2 boutons (Bet AI RIGHT / Bet AI WRONG), timer, badge “Live/Simulated”, bouton Phantom grisé.
+
+✅ Dashboard : solde USDC (Deposit/Withdraw), positions (ERC-1155 “prediction tokens”), Claim si gagné.
+
+✅ Contrat : deposit, withdraw, placeBet, claim, refund, reçu ERC-1155, events.
+
+✅ Oracle/IA : cron “création marché” + snapshots T0/T24h ; “simulate” si pas de clés.
+
+✅ Config réseaux : local prêt + templates Base Sepolia.
+
+Si tu valides, je compile ces choix dans un unique prompt Replit (texte only) avec tous les détails/ENV/scripts — prêt à coller.
