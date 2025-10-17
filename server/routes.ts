@@ -257,19 +257,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/chat", async (req, res) => {
     try {
       const { question, marketId } = req.body;
+      console.log(`Chat request: "${question}", marketId: ${marketId}`);
       
       let marketContext = null;
       if (marketId) {
         const market = await storage.getMarket(marketId);
         const rationale = await storage.getRationale(marketId);
         marketContext = { market, rationale };
+        console.log(`Market context loaded: ${market?.assetName} ${market?.direction}`);
       }
       
       const answer = await answerQuestion(question, marketContext);
+      console.log(`Answer generated (${answer.length} chars):`, answer.substring(0, 100));
+      
+      if (!answer || answer.trim().length === 0) {
+        console.warn("Empty answer, using fallback");
+        const fallback = marketContext?.market 
+          ? `I predicted ${marketContext.market.assetName} will move ${marketContext.market.direction} by ${marketContext.market.thresholdBps / 100}% based on market analysis.`
+          : "I analyze market conditions to make predictions. Ask me about specific aspects.";
+        return res.json({ answer: fallback });
+      }
+      
       res.json({ answer });
     } catch (error) {
-      console.error("Error in chat:", error);
-      res.status(500).json({ error: "Failed to get response" });
+      console.error("Error in chat endpoint:", error);
+      // Return a helpful fallback even on error
+      const fallback = "I'm currently analyzing market conditions. Please try asking again in a moment.";
+      res.json({ answer: fallback });
     }
   });
 

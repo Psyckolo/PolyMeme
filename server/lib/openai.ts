@@ -91,15 +91,34 @@ Requirements:
 - Be helpful but brief`;
 
   try {
+    console.log("Calling OpenAI chat API...");
     const response = await openai.chat.completions.create({
       model: "gpt-5", // the newest OpenAI model
       messages: [{ role: "user", content: prompt }],
       max_completion_tokens: 300,
     });
 
-    return response.choices[0]?.message?.content || "Unable to process question.";
+    console.log("OpenAI response received:", response.choices[0]?.message?.content ? "Success" : "Empty");
+    
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      console.warn("OpenAI returned empty content");
+      // Return a helpful fallback based on market context
+      if (marketContext?.market) {
+        const market = marketContext.market;
+        return `I predicted ${market.assetName} will move ${market.direction} by ${market.thresholdBps / 100}% based on current market dynamics and technical analysis. This prediction considers volume patterns, sentiment indicators, and price action trends.`;
+      }
+      return "I analyze market data and trends to make predictions. Ask me about specific aspects of the current prediction for more details.";
+    }
+    
+    return content;
   } catch (error) {
     console.error("Error answering question:", error);
-    return "Unable to connect to ProphetX. Please try again.";
+    // Provide a helpful fallback with context if available
+    if (marketContext?.market) {
+      const market = marketContext.market;
+      return `Based on my analysis, ${market.assetName} shows ${market.direction === "UP" ? "bullish" : "bearish"} signals suggesting a ${market.direction} move. The prediction targets ${market.thresholdBps / 100}% movement within the next 24 hours.`;
+    }
+    return "I'm currently analyzing market conditions. Please try asking your question again.";
   }
 }

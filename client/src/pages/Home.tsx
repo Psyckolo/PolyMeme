@@ -76,9 +76,20 @@ export default function Home() {
   const handleAskProphet = async (question: string): Promise<string> => {
     try {
       const response = await apiRequest("POST", "/api/chat", { question, marketId: market?.id });
-      return response.answer || "I couldn't process that question.";
+      console.log("Chat response received:", response);
+      console.log("Answer value:", response.answer, "Type:", typeof response.answer);
+      
+      // Server always returns a helpful response with fallbacks
+      if (response.answer && response.answer.trim().length > 0) {
+        return response.answer;
+      }
+      
+      // This should rarely happen now
+      console.warn("Received empty answer from server, using client fallback");
+      return "The Prophet is currently unavailable. Please try again.";
     } catch (error) {
-      return "Unable to connect to the Prophet. Please try again.";
+      console.error("Error asking Prophet:", error);
+      return "Unable to connect to the Prophet. Please check your connection and try again.";
     }
   };
 
