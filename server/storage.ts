@@ -40,6 +40,8 @@ export interface IStorage {
   // User Stats
   getUserStats(userAddress: string): Promise<UserStats | undefined>;
   createOrUpdateUserStats(userAddress: string, updates: Partial<UserStats>): Promise<UserStats>;
+  getAllUserStats(): Promise<UserStats[]>;
+  getUserByReferralCode(code: string): Promise<UserStats | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -210,7 +212,7 @@ export class MemStorage implements IStorage {
       return updated;
     }
     
-    const newStats: UserStats = {
+    const defaults: UserStats = {
       id: randomUUID(),
       userAddress: key,
       totalBets: 0,
@@ -219,11 +221,29 @@ export class MemStorage implements IStorage {
       totalWinnings: "0",
       currentStreak: 0,
       bestStreak: 0,
-      ...updates,
+      points: 0,
+      volumeTraded: "0",
+      referralCode: null,
+      referredBy: null,
+      referralCount: 0,
       updatedAt: new Date(),
     };
+    
+    const newStats: UserStats = { ...defaults, ...updates, updatedAt: new Date() };
     this.userStats.set(key, newStats);
     return newStats;
+  }
+  
+  async getAllUserStats(): Promise<UserStats[]> {
+    return Array.from(this.userStats.values()).sort(
+      (a, b) => b.points - a.points
+    );
+  }
+  
+  async getUserByReferralCode(code: string): Promise<UserStats | undefined> {
+    return Array.from(this.userStats.values()).find(
+      (stats) => stats.referralCode === code
+    );
   }
 }
 

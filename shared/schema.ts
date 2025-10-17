@@ -90,7 +90,7 @@ export const rationales = pgTable("rationales", {
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
-// Leaderboard stats
+// Leaderboard stats & Airdrop points
 export const userStats = pgTable("user_stats", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userAddress: text("user_address").notNull().unique(),
@@ -100,6 +100,12 @@ export const userStats = pgTable("user_stats", {
   totalWinnings: text("total_winnings").notNull().default("0"),
   currentStreak: integer("current_streak").notNull().default(0),
   bestStreak: integer("best_streak").notNull().default(0),
+  // Airdrop farming system
+  points: integer("points").notNull().default(0), // Total points for airdrop
+  volumeTraded: text("volume_traded").notNull().default("0"), // Total volume traded
+  referralCode: text("referral_code").unique(), // Unique referral code
+  referredBy: text("referred_by"), // Address of referrer
+  referralCount: integer("referral_count").notNull().default(0), // Number of referrals
   updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
 });
 
@@ -172,7 +178,13 @@ export const claimSchema = z.object({
   userAddress: z.string(),
 });
 
+export const applyReferralSchema = z.object({
+  userAddress: z.string(),
+  referralCode: z.string(),
+});
+
 export type DepositRequest = z.infer<typeof depositSchema>;
 export type WithdrawRequest = z.infer<typeof withdrawSchema>;
 export type PlaceBetRequest = z.infer<typeof placeBetSchema>;
 export type ClaimRequest = z.infer<typeof claimSchema>;
+export type ApplyReferralRequest = z.infer<typeof applyReferralSchema>;
