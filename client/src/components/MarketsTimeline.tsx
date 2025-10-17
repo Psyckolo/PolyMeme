@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Market } from "@shared/schema";
 import { ArrowUp, ArrowDown, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { Link } from "wouter";
+import { formatPrice } from "@/lib/utils/price";
 
 interface MarketsTimelineProps {
   selectedMarketId?: string;
@@ -104,8 +105,8 @@ export function MarketsTimeline({ selectedMarketId, onSelectMarket }: MarketsTim
 
         {market.price0 && market.assetType === 'TOKEN' && (
           <div className="mt-2 text-sm text-muted-foreground font-mono">
-            Price: ${parseFloat(market.price0).toFixed(4)}
-            {market.price1 && ` → $${parseFloat(market.price1).toFixed(4)}`}
+            Price: {formatPrice(parseFloat(market.price0))}
+            {market.price1 && ` → ${formatPrice(parseFloat(market.price1))}`}
           </div>
         )}
 

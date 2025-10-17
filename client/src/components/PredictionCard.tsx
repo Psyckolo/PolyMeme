@@ -6,6 +6,7 @@ import { CountdownBadge } from "./CountdownBadge";
 import { ScanlineOverlay } from "./ScanlineOverlay";
 import type { Market } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
+import { formatPrice } from "@/lib/utils/price";
 
 interface PredictionCardProps {
   market: Market | null;
@@ -16,28 +17,6 @@ interface PriceData {
   price0: string;
   currentPrice: string;
   priceChange: string;
-}
-
-// Format price with appropriate decimal places
-function formatPrice(price: number): string {
-  if (price === 0) return "$0.0000";
-  
-  // For very small numbers (< 0.01), show more decimals
-  if (price < 0.01) {
-    // Find first non-zero decimal
-    const priceStr = price.toFixed(20); // Get many decimals
-    const match = priceStr.match(/\.0*[1-9]/);
-    if (match) {
-      const zerosCount = match[0].length - 2; // Count zeros after decimal
-      const significantDecimals = Math.min(zerosCount + 4, 10); // Show 4 significant digits
-      return `$${price.toFixed(significantDecimals)}`;
-    }
-  }
-  
-  // For regular numbers, use standard 4 decimals
-  if (price < 1) return `$${price.toFixed(4)}`;
-  if (price < 100) return `$${price.toFixed(2)}`;
-  return `$${price.toFixed(0)}`;
 }
 
 export function PredictionCard({ market, isLoading }: PredictionCardProps) {
