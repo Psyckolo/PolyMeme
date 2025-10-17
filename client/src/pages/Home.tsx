@@ -6,10 +6,11 @@ import { ParticleField } from "@/components/ParticleField";
 import { PredictionCard } from "@/components/PredictionCard";
 import { BetPanel } from "@/components/BetPanel";
 import { ProphetChatDrawer } from "@/components/ProphetChatDrawer";
+import { MarketsTimeline } from "@/components/MarketsTimeline";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, Ghost, LogOut, LayoutDashboard, TrendingUp, Shield, Zap, Activity } from "lucide-react";
+import { Wallet, Ghost, LogOut, LayoutDashboard, TrendingUp, Shield, Zap, Activity, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Market } from "@shared/schema";
@@ -328,6 +329,9 @@ export default function Home() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Markets Timeline */}
+        <MarketsTimeline />
 
         {/* Disclaimer */}
         <div className="text-center text-sm text-muted-foreground border-t border-border pt-8">

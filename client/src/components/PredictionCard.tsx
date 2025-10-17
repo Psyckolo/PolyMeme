@@ -1,17 +1,31 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUp, ArrowDown, TrendingUp } from "lucide-react";
 import { PoolMeter } from "./PoolMeter";
 import { CountdownBadge } from "./CountdownBadge";
 import { ScanlineOverlay } from "./ScanlineOverlay";
 import type { Market } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
 
 interface PredictionCardProps {
   market: Market | null;
   isLoading?: boolean;
 }
 
+interface PriceData {
+  price0: string;
+  currentPrice: string;
+  priceChange: string;
+}
+
 export function PredictionCard({ market, isLoading }: PredictionCardProps) {
+  // Fetch real-time price for tokens
+  const { data: priceData } = useQuery<PriceData>({
+    queryKey: ['/api/price', market?.id],
+    enabled: !!market && market.assetType === 'TOKEN',
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
   if (isLoading || !market) {
     return (
       <Card className="relative w-full max-w-3xl mx-auto p-8 bg-card border-2 border-card-border animate-pulse">
@@ -25,6 +39,10 @@ export function PredictionCard({ market, isLoading }: PredictionCardProps) {
   const totalPool = parseFloat(market.poolRight) + parseFloat(market.poolWrong);
   const rightPercentage = totalPool > 0 ? (parseFloat(market.poolRight) / totalPool) * 100 : 50;
   const wrongPercentage = totalPool > 0 ? (parseFloat(market.poolWrong) / totalPool) * 100 : 50;
+
+  const price0 = market.price0 ? parseFloat(market.price0) : 0;
+  const currentPrice = priceData?.currentPrice ? parseFloat(priceData.currentPrice) : price0;
+  const priceChange = priceData?.priceChange ? parseFloat(priceData.priceChange) : 0;
 
   const lockTime = new Date(market.lockTime);
   const endTime = new Date(market.endTime);
@@ -79,6 +97,32 @@ export function PredictionCard({ market, isLoading }: PredictionCardProps) {
           variant={getStatusVariant()}
         />
       </div>
+
+      {/* Price Display (for Tokens) */}
+      {market.assetType === 'TOKEN' && price0 > 0 && (
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="p-4 bg-muted/20 rounded-lg">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Starting Price</p>
+            <p className="text-2xl font-mono font-bold" data-testid="text-price-start">
+              ${price0.toFixed(4)}
+            </p>
+          </div>
+          <div className="p-4 bg-muted/20 rounded-lg">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1 flex items-center gap-1">
+              Current Price
+              {priceData && <TrendingUp className="w-3 h-3" />}
+            </p>
+            <p className="text-2xl font-mono font-bold" data-testid="text-price-current">
+              ${currentPrice.toFixed(4)}
+              {priceChange !== 0 && (
+                <span className={`text-sm ml-2 ${priceChange > 0 ? 'text-[hsl(var(--neon-green))]' : 'text-destructive'}`}>
+                  {priceChange > 0 ? '+' : ''}{priceChange.toFixed(2)}%
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Prediction Direction */}
       <div className="flex items-center justify-center gap-6 my-8 p-6 bg-muted/20 rounded-lg backdrop-blur-sm">

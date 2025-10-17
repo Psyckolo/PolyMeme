@@ -202,6 +202,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all markets
+  app.get("/api/markets", async (req, res) => {
+    try {
+      const markets = await storage.getAllMarkets();
+      res.json(markets);
+    } catch (error) {
+      console.error("Error fetching markets:", error);
+      res.status(500).json({ error: "Failed to fetch markets" });
+    }
+  });
+
   // Get user positions
   app.get("/api/positions/:userAddress", async (req, res) => {
     try {

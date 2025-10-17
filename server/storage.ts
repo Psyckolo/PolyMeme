@@ -68,6 +68,8 @@ export class MemStorage implements IStorage {
       marketId: this.marketIdCounter++,
       assetLogo: insertMarket.assetLogo || null,
       thresholdBps: insertMarket.thresholdBps || 500,
+      price0: insertMarket.price0 || null,
+      price1: insertMarket.price1 || null,
       poolRight: "0",
       poolWrong: "0",
       status: "OPEN",
@@ -89,14 +91,11 @@ export class MemStorage implements IStorage {
 
   async getTodayMarket(): Promise<Market | undefined> {
     const markets = Array.from(this.markets.values());
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Sort by creation time, most recent first
+    markets.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     
-    return markets.find((m) => {
-      const marketDate = new Date(m.startTime);
-      marketDate.setHours(0, 0, 0, 0);
-      return marketDate.getTime() === today.getTime();
-    }) || markets[markets.length - 1]; // Return most recent if no today market
+    // Return the most recent market
+    return markets[0];
   }
 
   async getAllMarkets(): Promise<Market[]> {

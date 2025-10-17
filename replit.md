@@ -37,9 +37,13 @@ Preferred communication style: Simple, everyday language.
 - No global state management library (Redux/Zustand) - uses React Query cache as source of truth
 
 **Key Pages & Components**
-- **Home** (`/`): Landing page with today's prediction card and betting interface
+- **Home** (`/`): Landing page with today's prediction card, betting interface, and markets timeline
 - **Dashboard** (`/dashboard`): User positions table, balance management, claim winnings
-- **Shared Components**: PredictionCard, BetPanel, PoolMeter, CountdownBadge, ProphetChatDrawer (AI Q&A)
+- **Shared Components**: 
+  - PredictionCard: Displays current market with real-time price updates (TOKEN markets only)
+  - BetPanel: Betting interface for AI RIGHT/WRONG
+  - MarketsTimeline: Shows active, locked, and settled markets with status indicators
+  - PoolMeter, CountdownBadge, ProphetChatDrawer (AI Q&A)
 
 ### Backend Architecture
 
@@ -63,19 +67,31 @@ Preferred communication style: Simple, everyday language.
 - **Cron-based scheduler** using `node-cron` for daily market creation
 - Market states: OPEN → LOCKED → SETTLED/REFUND
 - Automated settlement logic via oracle agent
+- Market timing: lockTime = creation + 24h, endTime = creation + 48h
+- `getTodayMarket()` returns most recent market by `createdAt` timestamp (descending)
 
 **AI Integration Architecture**
 - **OpenAI GPT-5** via Replit AI Integrations service (no API key required)
 - **DexScreener API** (free, no key required) for real-time token prices:
-  - Fetches actual prices for Solana tokens (BONK, WIF) and Ethereum tokens (PEPE)
+  - Fetches actual prices for Solana tokens (BONK, WIF, DOGE) and Ethereum tokens (PEPE)
   - Provides starting price (price0) when market opens
-  - Real-time price updates via `/api/price/:marketId` endpoint
+  - Real-time price updates via `/api/price/:marketId` endpoint (auto-refresh every 30s on frontend)
+  - Returns price0, currentPrice, and priceChange percentage
   - Used for settlement to determine actual price movement
 - Two operational modes:
   - **Analytics mode**: Real market data from DexScreener API
   - **Simulate mode**: AI-generated realistic predictions (fallback when API fails)
 - Generates rationale bullets (4-6 analytical points) for each prediction
 - ProphetX chat drawer for user Q&A about predictions
+
+**Key API Endpoints**
+- `/api/market/today` - Current active market (most recent by createdAt)
+- `/api/markets` - All markets sorted by creation time (newest first)
+- `/api/price/:marketId` - Real-time price data for TOKEN markets
+- `/api/balance/:userAddress` - User USDC balance
+- `/api/positions/:userAddress` - User's bet positions with market data
+- `/api/bet` - Place bet on AI RIGHT or AI WRONG
+- `/api/claim` - Claim winnings from settled markets
 
 ### External Dependencies
 
