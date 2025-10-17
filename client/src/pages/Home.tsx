@@ -7,6 +7,7 @@ import { BetPanel } from "@/components/BetPanel";
 import { ProphetChatDrawer } from "@/components/ProphetChatDrawer";
 import { MetaMaskGuide } from "@/components/MetaMaskGuide";
 import { WalletConflictGuide } from "@/components/WalletConflictGuide";
+import { MetaMaskStatus } from "@/components/MetaMaskStatus";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, Ghost, LogOut } from "lucide-react";
@@ -232,7 +233,8 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-4 py-12 space-y-12">
-        {/* Wallet warnings */}
+        {/* Wallet status and warnings */}
+        <MetaMaskStatus />
         <MetaMaskGuide />
         <WalletConflictGuide />
         

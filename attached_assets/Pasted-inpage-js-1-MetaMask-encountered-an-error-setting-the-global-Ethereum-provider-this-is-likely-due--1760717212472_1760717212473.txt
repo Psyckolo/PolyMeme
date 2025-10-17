@@ -1,0 +1,51 @@
+inpage.js:1 MetaMask encountered an error setting the global Ethereum provider - this is likely due to another Ethereum wallet extension also setting the global Ethereum provider: TypeError: Cannot set property ethereum of #<Window> which has only a getter
+    at a (inpage.js:1:51283)
+    at r.initializeProvider (inpage.js:1:51054)
+    at Object.<anonymous> (inpage.js:1:2308)
+    at Object.<anonymous> (inpage.js:1:6316)
+    at 2.../../shared/modules/provider-injection (inpage.js:1:6329)
+    at i (inpage.js:1:254)
+    at e (inpage.js:1:412)
+    at inpage.js:1:429
+a @ inpage.js:1
+r.initializeProvider @ inpage.js:1
+(anonymous) @ inpage.js:1
+(anonymous) @ inpage.js:1
+2.../../shared/modules/provider-injection @ inpage.js:1
+i @ inpage.js:1
+e @ inpage.js:1
+(anonymous) @ inpage.js:1Understand this error
+content.js:2 Check phishing by URL: Passed.
+chunk-Z2GUPSCO.js?v=ea47ca12:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+pageProvider.js:1 eth getParams bi6FVigBGtxjkDH-s2N-b
+chunk-VIP5BW7X.js?v=ea47ca12:862 Uncaught (in promise) {code: 4001, message: 'wallet must has at least one account'}
+onConnect @ chunk-VIP5BW7X.js?v=ea47ca12:862
+await in onConnect
+o.emit @ pageProvider.js:2
+initialize @ pageProvider.js:2
+await in initialize
+j @ pageProvider.js:2
+(anonymous) @ pageProvider.js:2
+(anonymous) @ pageProvider.js:2
+(anonymous) @ pageProvider.js:2Understand this error
+pageProvider.js:1 TypeError: Cannot set property ethereum of #<Window> which has only a getter
+    at pageProvider.js:1:97893
+    at async pageProvider.js:1:96198
+(anonymous) @ pageProvider.js:1
+await in (anonymous)
+(anonymous) @ pageProvider.js:1
+(anonymous) @ pageProvider.js:1
+(anonymous) @ pageProvider.js:1
+(anonymous) @ pageProvider.js:1Understand this error
+chunk-VIP5BW7X.js?v=ea47ca12:862 Uncaught (in promise) {code: 4001, message: 'wallet must has at least one account', data: undefined}
+onConnect @ chunk-VIP5BW7X.js?v=ea47ca12:862
+await in onConnect
+(anonymous) @ pageProvider.js:1
+initialize @ pageProvider.js:1
+await in initialize
+rM @ pageProvider.js:1
+(anonymous) @ pageProvider.js:1
+(anonymous) @ pageProvider.js:1
+(anonymous) @ pageProvider.js:1Understand this error
+Home.tsx:103 Attempting to connect MetaMask...
+4main.tsx:10 MetaMask authorization pending (this is normal on first connection)
