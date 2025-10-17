@@ -300,6 +300,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user stats (points, volume, referrals)
+  app.get("/api/stats/:userAddress", async (req, res) => {
+    try {
+      const { userAddress } = req.params;
+      let stats = await storage.getUserStats(userAddress);
+      
+      // Create stats if they don't exist
+      if (!stats) {
+        stats = await storage.createOrUpdateUserStats(userAddress, {});
+      }
+      
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+      res.status(500).json({ error: "Failed to fetch stats" });
+    }
+  });
+
+  // Generate referral code
+  app.post("/api/referral/generate", async (req, res) => {
+    try {
+      const { userAddress } = req.body;
+      
+      let stats = await storage.getUserStats(userAddress);
+      
+      // If user already has a code, return it
+      if (stats?.referralCode) {
+        return res.json({ referralCode: stats.referralCode });
+      }
+      
+      // Generate unique 6-character code
+      const generateCode = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+      };
+      
+      let referralCode = generateCode();
+      // Ensure uniqueness
+      while (await storage.getUserByReferralCode(referralCode)) {
+        referralCode = generateCode();
+      }
+      
+      // Update or create stats with referral code
+      stats = await storage.createOrUpdateUserStats(userAddress, { referralCode });
+      
+      res.json({ referralCode });
+    } catch (error) {
+      console.error("Error generating referral code:", error);
+      res.status(500).json({ error: "Failed to generate referral code" });
+    }
+  });
+
+  // Apply referral code
+  app.post("/api/referral/apply", async (req, res) => {
+    try {
+      const { userAddress, referralCode } = req.body;
+      
+      // Check if user already has a referrer
+      const userStats = await storage.getUserStats(userAddress);
+      if (userStats?.referredBy) {
+        return res.status(400).json({ error: "You already used a referral code" });
+      }
+      
+      // Find referrer by code
+      const referrer = await storage.getUserByReferralCode(referralCode);
+      if (!referrer) {
+        return res.status(404).json({ error: "Invalid referral code" });
+      }
+      
+      // Can't refer yourself
+      if (referrer.userAddress.toLowerCase() === userAddress.toLowerCase()) {
+        return res.status(400).json({ error: "Cannot use your own referral code" });
+      }
+      
+      // Update user stats with referrer
+      await storage.createOrUpdateUserStats(userAddress, {
+        referredBy: referrer.userAddress,
+      });
+      
+      // Give bonus points to referrer (50 points)
+      await storage.createOrUpdateUserStats(referrer.userAddress, {
+        points: referrer.points + 50,
+        referralCount: referrer.referralCount + 1,
+      });
+      
+      // Give bonus points to new user (10 points)
+      await storage.createOrUpdateUserStats(userAddress, {
+        points: (userStats?.points || 0) + 10,
+      });
+      
+      res.json({ success: true, message: "Referral applied! You earned 10 points, your referrer earned 50 points" });
+    } catch (error) {
+      console.error("Error applying referral:", error);
+      res.status(500).json({ error: "Failed to apply referral code" });
+    }
+  });
+
+  // Get leaderboard
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      const allStats = await storage.getAllUserStats();
+      const leaderboard = allStats.slice(0, 100); // Top 100
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      res.status(500).json({ error: "Failed to fetch leaderboard" });
+    }
+  });
+
   // Chat with Prophet
   app.post("/api/chat", async (req, res) => {
     try {
