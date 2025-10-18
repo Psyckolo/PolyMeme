@@ -1,0 +1,89 @@
+Connexion wallet réelle
+
+Détecter window.ethereum, ouvrir le site hors iframe Replit.
+
+Gérer réseau (Base Sepolia ou Hardhat local).
+
+Persistance
+
+Ajouter SQLite / Prisma : markets, bets, balances, users.
+
+Bet 
+
+L'IA creer 4 bets en automatique toutes les 24H quand es bets précédents sont finits (token ou NFT, UP/DOWN avec seuil %) ca peut aussi être Telle collection superforme telle collection par ex pudgy superforme BAYC -> Vrai ou faux. 
+Je voudrais aussi plus de diversité sur les bets que juste Up ou down. Du style quelle sera le prochain token de nodestrategy. Plus de variété avec les tokens, en restant dans les shitcoins, pareille pour les collections ETH, mettre de la variété. Donc savoir quelle genre de bet peuvent être créer ? Est ce que ca sera redondant ou non ? Commment éviter de faire plusieurs fois le même bet etc.
+
+API de prix
+
+Tokens : Jupiter / CoinGecko / DexScreener.
+
+NFTs : OpenSea v2 (clé gratuite) + fallback Alchemy NFT.
+
+Cache 30–60 s.
+
+Cycle T0 / T12 / T24
+
+Scheduler : création (09 h), lock (21 h), règlement (09 h lendemain).
+
+Vérrouiller paris après T+12 h, snapshot final T+24 h.
+
+Formule pari-mutuel
+
+Payout = (stake × pool_total / pool_gagnant) × (1 – fee).
+
+Fee protocolaire 2 %.
+
+IA fallback robuste
+
+Toujours un texte explicatif généré, même sans réponse OpenAI.
+
+UX claire
+
+Countdown vers lock, puis message « Locked / Settled ».
+
+Badge mode : Simulated / Live Data.
+
+4. Phase 2 : On-chain
+
+Déployer sur Hardhat puis Base Sepolia :
+
+PredictionMarket (pari-mutuel, lock, settle)
+
+PredictionTicket1155 (reçus ERC-1155)
+
+USDC mock.
+
+Oracle appelle oracleSubmitStart, oracleSubmitEnd, settle.
+
+Front migre vers wagmi / viem pour exécuter approve, placeBet, claim.
+
+5. Schéma SQLite recommandé
+
+users(address), markets(id, type, asset, direction, threshold, times, price0, price1, status),
+bets(id, marketId, user, side, amount, claimed), balances(user, amount), rationales(marketId, text).
+
+6. Risques et solutions
+
+Wallet non détecté → ouvrir en onglet plein.
+
+API NFT instable → fallback + cache.
+
+Pools déséquilibrés → ratio max ou refund.
+
+Données volatiles → persistance SQLite.
+
+IA muette → fallback texte automatique.
+
+7. Critères de “done” MVP
+
+Connexion MetaMask opérationnelle (adresse visible).
+
+Marché du jour toujours affiché.
+
+Dépôt / pari / claim persistants.
+
+Lock T+12 h et règlement T+24 h actifs.
+
+Prix NFT/token live (source affichée).
+
+Chat IA toujours réactif.
