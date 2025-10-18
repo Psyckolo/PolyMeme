@@ -115,11 +115,11 @@ export default function Home() {
   };
 
   const handleLogin = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/auth/twitter";
   };
 
   const handleLogout = () => {
-    window.location.href = "/api/logout";
+    window.location.href = "/auth/logout";
   };
 
   if (isLoading) {

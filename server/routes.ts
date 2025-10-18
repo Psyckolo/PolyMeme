@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { generateRationale, answerQuestion } from "./lib/openai";
 import { getTokenPrice } from "./lib/dexscreener";
 import { getNFTFloorPrice } from "./lib/nftfloor";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupTwitterAuth, isAuthenticated } from "./twitterAuth";
 import {
   depositSchema,
   withdrawSchema,
@@ -13,17 +13,17 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup Replit Auth (X/Twitter login)
-  await setupAuth(app);
+  // Setup Direct Twitter OAuth (NO Replit branding)
+  await setupTwitterAuth(app);
 
-  // Auth routes
+  // Auth user endpoint - returns current authenticated user
   app.get('/api/auth/user', async (req: any, res) => {
     try {
       // Return null if not authenticated instead of 401
-      if (!req.user || !req.user.claims) {
+      if (!req.user || !req.user.id) {
         return res.json(null);
       }
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {

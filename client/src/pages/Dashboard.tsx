@@ -142,7 +142,7 @@ export default function Dashboard() {
                   {user?.firstName || user?.email || "User"}
                 </Badge>
                 <Button 
-                  onClick={() => window.location.href = "/api/logout"} 
+                  onClick={() => window.location.href = "/auth/logout"} 
                   variant="outline"
                   size="icon"
                   data-testid="button-disconnect"
@@ -153,7 +153,7 @@ export default function Dashboard() {
             ) : (
               <div className="flex items-center gap-2">
                 <Button 
-                  onClick={() => window.location.href = "/api/login"} 
+                  onClick={() => window.location.href = "/auth/twitter"} 
                   variant="default"
                   data-testid="button-login"
                 >
@@ -184,7 +184,7 @@ export default function Dashboard() {
             <p className="text-muted-foreground mb-4">Log in with X (Twitter) or MetaMask to view your dashboard</p>
             <div className="flex gap-3 justify-center">
               <Button 
-                onClick={() => window.location.href = "/api/login"}
+                onClick={() => window.location.href = "/auth/twitter"}
                 data-testid="button-login-dashboard"
               >
                 <Wallet className="w-4 h-4 mr-2" />
@@ -214,7 +214,7 @@ export default function Dashboard() {
           <TabsContent value="positions" className="space-y-4">
             <PositionsTable
               positions={positions}
-              onClaim={(marketId) => claimMutation.mutateAsync(marketId)}
+              onClaim={async (marketId) => { await claimMutation.mutateAsync(marketId); }}
               onViewRationale={handleViewRationale}
             />
           </TabsContent>
@@ -222,9 +222,9 @@ export default function Dashboard() {
           <TabsContent value="balance" className="max-w-2xl">
             <BalancePanel
               balance={balanceData?.balance || "0"}
-              onDeposit={(amount) => depositMutation.mutateAsync(amount)}
-              onWithdraw={(amount) => withdrawMutation.mutateAsync(amount)}
-              onWithdrawAll={() => withdrawMutation.mutateAsync(balanceData?.balance || "0")}
+              onDeposit={async (amount) => { await depositMutation.mutateAsync(amount); }}
+              onWithdraw={async (amount) => { await withdrawMutation.mutateAsync(amount); }}
+              onWithdrawAll={async () => { await withdrawMutation.mutateAsync(balanceData?.balance || "0"); }}
             />
           </TabsContent>
 
