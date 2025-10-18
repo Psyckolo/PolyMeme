@@ -351,7 +351,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const currentBalance = balance ? parseFloat(balance.balance) : 0;
         await storage.createOrUpdateBalance(userAddress, (currentBalance + payout).toString());
         
-        res.json({ success: true, payout: payout.toString() });
+        // Award bonus points if bet won (30% bonus on bet amount for winners)
+        let bonusPoints = 0;
+        if (market.winner === userBet.side && market.winner !== "TIE") {
+          bonusPoints = Math.floor(betAmount * 0.3); // 30% of bet amount as bonus points
+          const currentStats = await storage.getUserStats(userAddress);
+          await storage.createOrUpdateUserStats(userAddress, {
+            points: (currentStats?.points || 0) + bonusPoints,
+          });
+        }
+        
+        res.json({ 
+          success: true, 
+          payout: payout.toString(),
+          bonusPoints: bonusPoints 
+        });
       } else {
         res.status(400).json({ error: "No payout available" });
       }
@@ -444,18 +458,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         referredBy: referrer.userAddress,
       });
       
-      // Give bonus points to referrer (50 points)
+      // Give bonus points to referrer (150 points)
       await storage.createOrUpdateUserStats(referrer.userAddress, {
-        points: referrer.points + 50,
+        points: referrer.points + 150,
         referralCount: referrer.referralCount + 1,
       });
       
-      // Give bonus points to new user (10 points)
+      // Give bonus points to new user (50 points)
       await storage.createOrUpdateUserStats(userAddress, {
-        points: (userStats?.points || 0) + 10,
+        points: (userStats?.points || 0) + 50,
       });
       
-      res.json({ success: true, message: "Referral applied! You earned 10 points, your referrer earned 50 points" });
+      res.json({ success: true, message: "Referral applied! You earned 50 points, your referrer earned 150 points" });
     } catch (error) {
       console.error("Error applying referral:", error);
       res.status(500).json({ error: "Failed to apply referral code" });

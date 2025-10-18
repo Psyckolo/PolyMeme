@@ -3,7 +3,17 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Minus } from "lucide-react";
+import { Loader2, Plus, Minus, AlertTriangle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface BalancePanelProps {
   balance: string;
@@ -17,6 +27,8 @@ export function BalancePanel({ balance, onDeposit, onWithdraw, onWithdrawAll }: 
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [isDepositing, setIsDepositing] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
+  const [showWithdrawAllDialog, setShowWithdrawAllDialog] = useState(false);
 
   const handleDeposit = async () => {
     if (!depositAmount || parseFloat(depositAmount) <= 0) return;
@@ -32,7 +44,11 @@ export function BalancePanel({ balance, onDeposit, onWithdraw, onWithdrawAll }: 
 
   const handleWithdraw = async () => {
     if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) return;
-    
+    setShowWithdrawDialog(true);
+  };
+
+  const confirmWithdraw = async () => {
+    setShowWithdrawDialog(false);
     setIsWithdrawing(true);
     try {
       await onWithdraw(withdrawAmount);
@@ -43,6 +59,11 @@ export function BalancePanel({ balance, onDeposit, onWithdraw, onWithdrawAll }: 
   };
 
   const handleWithdrawAll = async () => {
+    setShowWithdrawAllDialog(true);
+  };
+
+  const confirmWithdrawAll = async () => {
+    setShowWithdrawAllDialog(false);
     setIsWithdrawing(true);
     try {
       await onWithdrawAll();
@@ -187,6 +208,50 @@ export function BalancePanel({ balance, onDeposit, onWithdraw, onWithdrawAll }: 
           </div>
         </div>
       </Card>
+
+      {/* Withdraw Confirmation Dialog */}
+      <AlertDialog open={showWithdrawDialog} onOpenChange={setShowWithdrawDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              Confirm Withdrawal
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>You are about to withdraw <span className="font-bold">{withdrawAmount} USDC</span> from your test balance.</p>
+              <p className="text-yellow-500">⚠️ This is a test environment with a maximum balance of 10,000 USDC.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-withdraw">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmWithdraw} data-testid="button-confirm-withdraw">
+              Confirm Withdrawal
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Withdraw All Confirmation Dialog */}
+      <AlertDialog open={showWithdrawAllDialog} onOpenChange={setShowWithdrawAllDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              Confirm Withdraw All
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>You are about to withdraw your entire balance of <span className="font-bold">{balance} USDC</span>.</p>
+              <p className="text-yellow-500">⚠️ This is a test environment with a maximum balance of 10,000 USDC.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-withdraw-all">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmWithdrawAll} data-testid="button-confirm-withdraw-all">
+              Confirm Withdraw All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
