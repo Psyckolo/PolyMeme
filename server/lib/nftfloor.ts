@@ -111,13 +111,13 @@ export async function getNFTFloorPrice(collectionSlug: string): Promise<string |
 export async function getFloorPriceOrFallback(collectionSlug: string): Promise<string> {
   const realPrice = await getNFTFloorPrice(collectionSlug);
   
-  // Only accept real price if it's greater than 0 (OpenSea sometimes returns 0 for unlisted/migrated collections)
-  if (realPrice && parseFloat(realPrice) > 0) {
+  // Only accept real price if it's greater than 0.001 (OpenSea sometimes returns 0 for unlisted/migrated collections)
+  if (realPrice && parseFloat(realPrice) > 0.001) {
     console.log(`✅ Using real OpenSea price for ${collectionSlug}: ${realPrice} ETH`);
     return realPrice;
   }
   
-  console.log(`⚠️ OpenSea returned 0 or failed for ${collectionSlug}, using fallback`);
+  console.log(`⚠️ OpenSea returned ${realPrice || '0'} for ${collectionSlug}, using fallback`);
 
   // Fallback: realistic floor prices (updated January 2025)
   const fallbackPrices: Record<string, number> = {

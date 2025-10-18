@@ -56,6 +56,16 @@ export default function Home() {
     }
   }, [allMarkets, selectedMarket]);
 
+  // Update selected market when markets data changes (after bet)
+  useEffect(() => {
+    if (selectedMarket && allMarkets.length > 0) {
+      const updatedMarket = allMarkets.find(m => m.id === selectedMarket.id);
+      if (updatedMarket) {
+        setSelectedMarket(updatedMarket);
+      }
+    }
+  }, [allMarkets]);
+
   // Filter active and past markets
   const activeMarkets = allMarkets.filter(m => m.status === "OPEN");
   const pastMarkets = allMarkets.filter(m => m.status === "SETTLED" || m.status === "REFUND").slice(0, 5);
