@@ -374,7 +374,7 @@ export class DatabaseStorage implements IStorage {
     const [balance] = await db
       .select()
       .from(balances)
-      .where(eq(balances.userAddress, userAddress.toLowerCase()));
+      .where(sql`LOWER(${balances.userAddress}) = LOWER(${userAddress})`);
     
     return balance;
   }
@@ -435,7 +435,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(bets)
-      .where(eq(bets.userAddress, userAddress.toLowerCase()))
+      .where(sql`LOWER(${bets.userAddress}) = LOWER(${userAddress})`)
       .orderBy(desc(bets.createdAt));
   }
 
@@ -480,7 +480,7 @@ export class DatabaseStorage implements IStorage {
     const [stats] = await db
       .select()
       .from(userStats)
-      .where(eq(userStats.userAddress, userAddress.toLowerCase()));
+      .where(sql`LOWER(${userStats.userAddress}) = LOWER(${userAddress})`);
     
     return stats;
   }
