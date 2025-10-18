@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateRationale, answerQuestion } from "./lib/openai";
 import { getTokenPrice } from "./lib/dexscreener";
-import { getNFTFloorPrice } from "./lib/nftfloor";
+import { getFloorPriceOrFallback } from "./lib/nftfloor";
 import { setupTwitterAuth, isAuthenticated } from "./twitterAuth";
 import {
   depositSchema,
@@ -81,9 +81,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Fetch real-time price based on asset type
       if (market.assetType === "NFT") {
-        // Get current NFT floor price from OpenSea
-        const currentFloorPrice = await getNFTFloorPrice(market.assetId);
-        const priceNow = currentFloorPrice ? parseFloat(currentFloorPrice) : price0;
+        // Get current NFT floor price from OpenSea (with fallback)
+        const currentFloorPrice = await getFloorPriceOrFallback(market.assetId);
+        const priceNow = parseFloat(currentFloorPrice);
         const priceChange = price0 > 0 ? ((priceNow - price0) / price0) * 100 : 0;
 
         return res.json({
