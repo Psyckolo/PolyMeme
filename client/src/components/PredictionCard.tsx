@@ -20,10 +20,10 @@ interface PriceData {
 }
 
 export function PredictionCard({ market, isLoading }: PredictionCardProps) {
-  // Fetch real-time price for tokens
+  // Fetch real-time price for tokens and NFTs
   const { data: priceData } = useQuery<PriceData>({
     queryKey: ['/api/price', market?.id],
-    enabled: !!market && market.assetType === 'TOKEN',
+    enabled: !!market,
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
@@ -127,17 +127,26 @@ export function PredictionCard({ market, isLoading }: PredictionCardProps) {
       
       {/* Floor Price Display (for NFTs) */}
       {market.assetType === 'NFT' && market.price0 && (
-        <div className="mb-6">
+        <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="p-4 bg-muted/20 rounded-lg">
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Starting Floor Price</p>
-            <p className="text-3xl font-mono font-bold" data-testid="text-floor-start">
+            <p className="text-2xl font-mono font-bold" data-testid="text-floor-start">
               {parseFloat(market.price0).toFixed(3)} ETH
             </p>
-            {market.price1 && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Final: {parseFloat(market.price1).toFixed(3)} ETH
-              </p>
-            )}
+          </div>
+          <div className="p-4 bg-muted/20 rounded-lg">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1 flex items-center gap-1">
+              Current Floor Price
+              {priceData && <TrendingUp className="w-3 h-3" />}
+            </p>
+            <p className="text-2xl font-mono font-bold" data-testid="text-floor-current">
+              {currentPrice.toFixed(3)} ETH
+              {priceChange !== 0 && (
+                <span className={`text-sm ml-2 ${priceChange > 0 ? 'text-[hsl(var(--neon-green))]' : 'text-destructive'}`}>
+                  {priceChange > 0 ? '+' : ''}{priceChange.toFixed(2)}%
+                </span>
+              )}
+            </p>
           </div>
         </div>
       )}

@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateRationale, answerQuestion } from "./lib/openai";
 import { getTokenPrice } from "./lib/dexscreener";
+import { getNFTFloorPrice } from "./lib/nftfloor";
 import {
   depositSchema,
   withdrawSchema,
@@ -46,7 +47,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get current price (real-time) for a market's token
+  // Get current price (real-time) for a market's token or NFT
   app.get("/api/price/:marketId", async (req, res) => {
     try {
       const { marketId } = req.params;
@@ -56,17 +57,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Market not found" });
       }
 
-      // Only fetch real-time price for tokens
-      if (market.assetType !== "TOKEN") {
-        return res.json({ 
+      const price0 = parseFloat(market.price0 || "0");
+
+      // Fetch real-time price based on asset type
+      if (market.assetType === "NFT") {
+        // Get current NFT floor price from OpenSea
+        const currentFloorPrice = await getNFTFloorPrice(market.assetId);
+        const priceNow = currentFloorPrice ? parseFloat(currentFloorPrice) : price0;
+        const priceChange = price0 > 0 ? ((priceNow - price0) / price0) * 100 : 0;
+
+        return res.json({
           price0: market.price0,
-          currentPrice: market.price0, // For NFTs, no real-time update
-          priceChange: 0 
+          currentPrice: priceNow.toFixed(6),
+          priceChange: priceChange.toFixed(2),
         });
       }
 
+      // TOKEN: fetch from DexScreener
       const currentPrice = await getTokenPrice(market.assetId);
-      const price0 = parseFloat(market.price0 || "0");
       const priceNow = currentPrice ? parseFloat(currentPrice) : price0;
       const priceChange = price0 > 0 ? ((priceNow - price0) / price0) * 100 : 0;
 
