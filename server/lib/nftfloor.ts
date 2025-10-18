@@ -49,9 +49,16 @@ export async function getNFTFloorPrice(collectionSlug: string): Promise<string |
     const url = `https://api.opensea.io/api/v2/collections/${openseaSlug}/stats`;
     console.log(`Fetching floor price for ${collectionSlug} from OpenSea:`, url);
 
+    const apiKey = process.env.OPENSEA_API_KEY;
+    if (!apiKey) {
+      console.error('OPENSEA_API_KEY not found in environment variables');
+      return null;
+    }
+
     const response = await fetch(url, {
       headers: {
         'Accept': 'application/json',
+        'X-API-KEY': apiKey,
       },
     });
 
@@ -124,10 +131,17 @@ export async function getNFTStats(collectionSlug: string): Promise<OpenSeaStats 
       return null;
     }
 
+    const apiKey = process.env.OPENSEA_API_KEY;
+    if (!apiKey) {
+      console.error('OPENSEA_API_KEY not found in environment variables');
+      return null;
+    }
+
     const url = `https://api.opensea.io/api/v2/collections/${openseaSlug}/stats`;
     const response = await fetch(url, {
       headers: {
         'Accept': 'application/json',
+        'X-API-KEY': apiKey,
       },
     });
     
