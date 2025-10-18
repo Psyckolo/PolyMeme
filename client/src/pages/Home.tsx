@@ -170,7 +170,7 @@ export default function Home() {
             data-testid="button-login-metamask"
           >
             <Wallet className="mr-2 h-4 w-4" />
-            Login Metamask
+            Metamask soon
           </Button>
         </div>
       );

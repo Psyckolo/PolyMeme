@@ -167,7 +167,7 @@ export default function Dashboard() {
                   data-testid="button-login-metamask"
                 >
                   <Wallet className="w-4 h-4 mr-2" />
-                  Login Metamask
+                  Metamask soon
                 </Button>
               </div>
             )}
@@ -197,7 +197,7 @@ export default function Dashboard() {
                 data-testid="button-login-metamask-dashboard"
               >
                 <Wallet className="w-4 h-4 mr-2" />
-                Login Metamask
+                Metamask soon
               </Button>
             </div>
           </Card>

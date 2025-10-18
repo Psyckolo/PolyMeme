@@ -96,7 +96,7 @@ Preferred communication style: Simple, everyday language.
   - Selection randomized from each pool to ensure diversity
 - Market states: OPEN → LOCKED → SETTLED/REFUND
 - Automated settlement logic via oracle agent
-- Market timing: lockTime = creation + 12h, endTime = creation + 24h
+- Market timing: lockTime = creation + 2h, endTime = creation + 24h
 - `getTodayMarket()` returns most recent market by `createdAt` timestamp (descending)
 - Users can select any active market from MarketsTimeline to place bets
 

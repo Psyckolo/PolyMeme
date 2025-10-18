@@ -36,7 +36,7 @@ export function BetPanel({ market, userBalance, isConnected, onBet, onConnect }:
         <div className="text-center space-y-4">
           <p className="text-muted-foreground">Connect your wallet to place bets</p>
           <NeonButton onClick={onConnect} size="lg" testId="button-connect-wallet">
-            Connect MetaMask
+            Connect Twitter
           </NeonButton>
         </div>
       </Card>
