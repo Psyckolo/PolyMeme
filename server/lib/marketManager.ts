@@ -173,9 +173,23 @@ export async function lockMarket(marketId: string) {
 export async function createMultipleMarkets(count: number = 4) {
   console.log(`Creating ${count} markets...`);
   
-  // Shuffle assets to ensure diversity
-  const shuffledAssets = [...ASSETS].sort(() => Math.random() - 0.5);
-  const assetsToUse = shuffledAssets.slice(0, Math.min(count, ASSETS.length));
+  // Ensure a mix of tokens and NFTs (50% each)
+  const tokens = ASSETS.filter(a => a.type === "TOKEN");
+  const nfts = ASSETS.filter(a => a.type === "NFT");
+  
+  const tokenCount = Math.floor(count / 2);
+  const nftCount = count - tokenCount;
+  
+  const shuffledTokens = [...tokens].sort(() => Math.random() - 0.5);
+  const shuffledNfts = [...nfts].sort(() => Math.random() - 0.5);
+  
+  const assetsToUse = [
+    ...shuffledTokens.slice(0, Math.min(tokenCount, tokens.length)),
+    ...shuffledNfts.slice(0, Math.min(nftCount, nfts.length))
+  ];
+  
+  // Shuffle the final list
+  assetsToUse.sort(() => Math.random() - 0.5);
   
   for (const asset of assetsToUse) {
     const direction = Math.random() > 0.5 ? "UP" : "DOWN";
