@@ -23,7 +23,7 @@ import { eq, desc, sql } from "drizzle-orm";
 import { db } from "./db";
 
 export interface IStorage {
-  // Auth (Replit Auth required methods)
+  // Auth (Twitter OAuth required methods)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   
