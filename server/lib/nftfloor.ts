@@ -111,26 +111,45 @@ export async function getNFTFloorPrice(collectionSlug: string): Promise<string |
 export async function getFloorPriceOrFallback(collectionSlug: string): Promise<string> {
   const realPrice = await getNFTFloorPrice(collectionSlug);
   
-  if (realPrice) {
+  // Only accept real price if it's greater than 0 (OpenSea sometimes returns 0 for unlisted/migrated collections)
+  if (realPrice && parseFloat(realPrice) > 0) {
+    console.log(`✅ Using real OpenSea price for ${collectionSlug}: ${realPrice} ETH`);
     return realPrice;
   }
+  
+  console.log(`⚠️ OpenSea returned 0 or failed for ${collectionSlug}, using fallback`);
 
-  // Fallback: simulate a realistic floor price in ETH
+  // Fallback: realistic floor prices (updated January 2025)
   const fallbackPrices: Record<string, number> = {
-    "pudgy-penguins": 12.5,
-    "milady": 3.2,
+    "pudgy-penguins": 10.5,
+    "milady": 1.8,
+    "bored-ape-yacht-club": 25.0,
     "azuki": 8.5,
-    "doodles": 2.8,
-    "cryptopunks": 45.0,
-    "bored-ape-yacht-club": 28.0,
+    "degods": 0.8,
+    "doodles-official": 2.5,
+    "clonex": 1.2,
+    "moonbirds": 1.5,
+    "captainz": 0.6,
+    "otherdeed": 0.4,
+    "meebits": 0.7,
+    "cryptopunks": 35.0,
+    "remilio": 0.45,
+    "sappy-seals": 0.3,
+    "opepen-edition": 0.2,
+    "nakamigos": 0.15,
+    "bored-ape-kennel-club": 5.0,
+    "mutant-ape-yacht-club": 3.0,
+    "art-blocks": 0.5,
+    "the-potatoz": 0.1,
+    "goblintown-wtf": 0.25,
   };
 
-  const basePrice = fallbackPrices[collectionSlug] || 5.0;
+  const basePrice = fallbackPrices[collectionSlug] || 1.0;
   // Add small random variation (+/- 5%)
   const variation = (Math.random() - 0.5) * 0.1;
   const simulatedPrice = basePrice * (1 + variation);
   
-  console.log(`${collectionSlug} simulated floor price: ${simulatedPrice.toFixed(6)} ETH (API unavailable)`);
+  console.log(`Using fallback price for ${collectionSlug}: ${simulatedPrice.toFixed(6)} ETH`);
   return simulatedPrice.toFixed(6);
 }
 

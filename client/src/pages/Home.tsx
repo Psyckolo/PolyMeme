@@ -76,10 +76,18 @@ export default function Home() {
         amount,
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/balance", userAddress] });
-      queryClient.invalidateQueries({ queryKey: ["/api/markets"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/positions", userAddress] });
+    onSuccess: async () => {
+      // Invalidate AND refetch all related queries immediately
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["/api/balance", userAddress] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/markets"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/positions", userAddress] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/stats", userAddress] }),
+      ]);
+      
+      // Force refetch markets to update pool stats immediately
+      await queryClient.refetchQueries({ queryKey: ["/api/markets"] });
+      
       toast({
         title: "Bet Placed!",
         description: "Your prediction has been recorded.",
