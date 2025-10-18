@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { PositionsTable } from "@/components/PositionsTable";
@@ -22,10 +22,8 @@ interface PositionWithMarket extends Bet {
 export default function Dashboard() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
-  const userAddress = address || "";
+  const { user, isAuthenticated } = useAuth();
+  const userAddress = user?.id || "";
   
   // Get tab from URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -138,13 +136,13 @@ export default function Dashboard() {
           </Button>
           
           <div className="flex items-center gap-2">
-            {isConnected ? (
+            {isAuthenticated ? (
               <>
-                <Badge variant="default" className="font-mono" data-testid="badge-wallet-address">
-                  {userAddress.substring(0, 6)}...{userAddress.substring(38)}
+                <Badge variant="outline" className="border-[#00ffff] text-[#00ffff]" data-testid="badge-user-name">
+                  {user?.firstName || user?.email || "User"}
                 </Badge>
                 <Button 
-                  onClick={() => disconnect()} 
+                  onClick={() => window.location.href = "/api/logout"} 
                   variant="outline"
                   size="icon"
                   data-testid="button-disconnect"
@@ -154,17 +152,12 @@ export default function Dashboard() {
               </>
             ) : (
               <Button 
-                onClick={() => {
-                  const metaMaskConnector = connectors.find(c => c.id === 'injected' || c.name === 'MetaMask');
-                  if (metaMaskConnector) {
-                    connect({ connector: metaMaskConnector });
-                  }
-                }} 
+                onClick={() => window.location.href = "/api/login"} 
                 variant="default"
-                data-testid="button-connect-metamask"
+                data-testid="button-login"
               >
                 <Wallet className="w-4 h-4 mr-2" />
-                Connect MetaMask
+                Login with X
               </Button>
             )}
           </div>
@@ -175,20 +168,15 @@ export default function Dashboard() {
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-black font-display mb-8">Dashboard</h1>
 
-        {!isConnected ? (
+        {!isAuthenticated ? (
           <Card className="p-12 text-center">
-            <p className="text-muted-foreground mb-4">Connect your wallet to view your dashboard</p>
+            <p className="text-muted-foreground mb-4">Log in with X (Twitter) to view your dashboard</p>
             <Button 
-              onClick={() => {
-                const metaMaskConnector = connectors.find(c => c.id === 'injected' || c.name === 'MetaMask');
-                if (metaMaskConnector) {
-                  connect({ connector: metaMaskConnector });
-                }
-              }}
-              data-testid="button-connect-wallet-dashboard"
+              onClick={() => window.location.href = "/api/login"}
+              data-testid="button-login-dashboard"
             >
               <Wallet className="w-4 h-4 mr-2" />
-              Connect Wallet
+              Login with X
             </Button>
           </Card>
         ) : (

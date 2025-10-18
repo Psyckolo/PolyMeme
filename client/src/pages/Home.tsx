@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useAuth } from "@/hooks/useAuth";
 import { Link } from "wouter";
 import { GlitchText } from "@/components/GlitchText";
 import { ParticleField } from "@/components/ParticleField";
@@ -20,27 +20,25 @@ import type { Market } from "@shared/schema";
 import heroImage from "@assets/generated_images/Cyberpunk_terminal_hero_background_7e72bdc2.png";
 
 export default function Home() {
-  const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
-  const userAddress = address || "";
+  const userAddress = user?.id || "";
 
-  // Track previous connection state to show toast only on new connections
-  const [wasConnected, setWasConnected] = useState(false);
+  // Track previous auth state to show toast only on new logins
+  const [wasAuthenticated, setWasAuthenticated] = useState(false);
 
-  // Show success toast when connection state changes from false to true
+  // Show success toast when auth state changes from false to true
   useEffect(() => {
-    if (isConnected && !wasConnected) {
+    if (isAuthenticated && !wasAuthenticated) {
       toast({
-        title: "Wallet Connected",
-        description: "Successfully connected to your wallet",
+        title: "Logged In",
+        description: `Welcome ${user?.firstName || user?.email || "back"}!`,
       });
-      setWasConnected(true);
-    } else if (!isConnected && wasConnected) {
-      setWasConnected(false);
+      setWasAuthenticated(true);
+    } else if (!isAuthenticated && wasAuthenticated) {
+      setWasAuthenticated(false);
     }
-  }, [isConnected, wasConnected, toast]);
+  }, [isAuthenticated, wasAuthenticated, toast, user]);
 
   // Fetch all markets
   const { data: allMarkets = [], isLoading: marketsLoading } = useQuery<Market[]>({
@@ -97,10 +95,10 @@ export default function Home() {
   });
 
   const handleBet = async (side: "RIGHT" | "WRONG", amount: string) => {
-    if (!isConnected || !userAddress) {
+    if (!isAuthenticated || !userAddress) {
       toast({
-        title: "Wallet Not Connected",
-        description: "Please connect your wallet to place a bet.",
+        title: "Not Logged In",
+        description: "Please log in with X (Twitter) to place a bet.",
         variant: "destructive",
       });
       return;
@@ -108,54 +106,59 @@ export default function Home() {
     await placeBetMutation.mutateAsync({ side, amount });
   };
 
-  const handleConnect = async () => {
-    console.log("Connect button clicked, connectors:", connectors);
-    console.log("Connector IDs:", connectors.map(c => ({ id: c.id, name: c.name, type: c.type })));
-    
-    // Try to find MetaMask connector by ID or just use the first available
-    const metaMaskConnector = connectors.find(c => 
-      c.id === 'injected' || 
-      c.id === 'io.metamask' || 
-      c.type === 'injected'
-    ) || connectors[0];
-    
-    if (!metaMaskConnector) {
-      toast({
-        title: "Wallet Not Found",
-        description: "Please install MetaMask or another Web3 wallet",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      console.log("Connecting with connector:", metaMaskConnector.id, metaMaskConnector.name);
-      await connect({ connector: metaMaskConnector });
-      // Success toast will be shown by useEffect when isConnected changes to true
-    } catch (error: any) {
-      console.error("Connection error:", error);
-      
-      // Don't show error if user rejected the request
-      if (error.message?.includes("User rejected") || error.message?.includes("User denied") || error.code === 4001) {
-        console.log("User cancelled connection");
-        return;
-      }
-      
-      toast({
-        title: "Connection Failed",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-    }
+  const handleLogin = () => {
+    window.location.href = "/api/login";
   };
 
-  const handleDisconnect = () => {
-    disconnect();
-    toast({
-      title: "Wallet Disconnected",
-      description: "Your wallet has been disconnected.",
-    });
+  const handleLogout = () => {
+    window.location.href = "/api/logout";
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Simplified connect button rendering
+  const renderAuthButton = () => {
+    if (!isAuthenticated) {
+      return (
+        <Button 
+          onClick={handleLogin}
+          className="bg-[#00ffff] hover:bg-[#00ffff]/90 text-black font-bold"
+          data-testid="button-login"
+        >
+          <Wallet className="mr-2 h-4 w-4" />
+          Login with X
+        </Button>
+      );
+    }
+    
+    return (
+      <div className="flex items-center gap-2">
+        <Badge variant="outline" className="border-[#00ffff] text-[#00ffff]">
+          <Ghost className="mr-1.5 h-3 w-3" />
+          {user?.firstName || user?.email || "User"}
+        </Badge>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleLogout}
+          className="hover:bg-[#ff00ff]/10 hover:text-[#ff00ff]"
+          data-testid="button-logout"
+        >
+          <LogOut className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  };
+
 
   const handleAskProphet = async (question: string): Promise<string> => {
     try {
@@ -207,7 +210,7 @@ export default function Home() {
           </div>
           
           <div className="flex items-center gap-3">
-            {isConnected && (
+            {isAuthenticated && (
               <Link href="/dashboard" data-testid="link-dashboard">
                 <Button variant="outline" size="sm">
                   <LayoutDashboard className="w-4 h-4 mr-2" />
@@ -216,31 +219,7 @@ export default function Home() {
               </Link>
             )}
             
-            {isConnected ? (
-              <div className="flex items-center gap-2">
-                <Badge variant="default" className="font-mono" data-testid="badge-wallet-address">
-                  {userAddress.substring(0, 6)}...{userAddress.substring(38)}
-                </Badge>
-                <Button 
-                  onClick={handleDisconnect} 
-                  variant="outline"
-                  size="icon"
-                  data-testid="button-disconnect"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </div>
-            ) : (
-              <Button 
-                onClick={handleConnect} 
-                variant="default"
-                className="bg-primary hover:bg-primary"
-                data-testid="button-connect-wallet"
-              >
-                <Wallet className="w-4 h-4 mr-2" />
-                Connect Wallet
-              </Button>
-            )}
+            {renderAuthButton()}
           </div>
         </div>
       </header>
@@ -307,9 +286,9 @@ export default function Home() {
         <BetPanel
           market={selectedMarket}
           userBalance={balanceData?.balance || "0"}
-          isConnected={isConnected}
+          isConnected={isAuthenticated}
           onBet={handleBet}
-          onConnect={handleConnect}
+          onConnect={handleLogin}
         />
 
         {/* Recent Activity */}
