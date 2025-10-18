@@ -39,7 +39,7 @@ export function ParticleField() {
           vx: (Math.random() - 0.5) * 0.3,
           vy: (Math.random() - 0.5) * 0.3,
           size: Math.random() * 2 + 0.5,
-          opacity: Math.random() * 0.3 + 0.1,
+          opacity: Math.random() * 0.2 + 0.05,
         });
       }
     };
@@ -79,7 +79,7 @@ export function ParticleField() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.4 }}
+      style={{ opacity: 0.15 }}
     />
   );
 }
