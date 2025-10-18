@@ -90,7 +90,10 @@ Preferred communication style: Simple, everyday language.
 
 **Market Lifecycle Management**
 - **Cron-based scheduler** using `node-cron` for daily market creation
-- **4 active markets** created daily at 9am (mix of TOKENs and NFTs)
+- **4 active markets** created daily at 9am with guaranteed 50/50 mix:
+  - 2 TOKEN markets (BONK, PEPE, WIF, DOGE)
+  - 2 NFT markets (Pudgy Penguins, Milady)
+  - Selection randomized from each pool to ensure diversity
 - Market states: OPEN → LOCKED → SETTLED/REFUND
 - Automated settlement logic via oracle agent
 - Market timing: lockTime = creation + 12h, endTime = creation + 24h
@@ -105,13 +108,18 @@ Preferred communication style: Simple, everyday language.
   - Real-time price updates via `/api/price/:marketId` endpoint (auto-refresh every 30s on frontend)
   - Returns price0, currentPrice, and priceChange percentage
   - Used for settlement to determine actual price movement
-- **NFT Floor Price API** (currently simulated):
-  - NOTE: Reservoir API is shutting down in October 2025
-  - TODO: Migrate to Alchemy getFloorPrice API or similar
-  - Currently returns simulated floor prices for NFT collections (Pudgy Penguins, Milady, etc.)
+- **OpenSea API v2** (requires API key) for real-time NFT floor prices:
+  - ✅ Fully integrated and operational with user's API key (`OPENSEA_API_KEY`)
+  - Fetches actual floor prices for NFT collections (Pudgy Penguins, Milady, etc.)
+  - API endpoint: `https://api.opensea.io/api/v2/collections/{slug}/stats`
+  - Returns floor_price in ETH, 24h volume, 7d sales count
+  - Module: `server/lib/opensea.ts` - handles API calls with error handling
+  - Module: `server/lib/nftfloor.ts` - orchestrates OpenSea API calls
+  - Fallback to simulated prices if API fails or collection not found
+  - Collection slugs mapped to contract addresses for API calls
 - Two operational modes:
-  - **Analytics mode**: Real market data from DexScreener API (for TOKENs)
-  - **Simulate mode**: AI-generated realistic predictions (fallback when API fails, or for NFTs)
+  - **Analytics mode**: Real market data from DexScreener API (for TOKENs) and OpenSea API (for NFTs)
+  - **Simulate mode**: AI-generated realistic predictions (fallback when API fails)
 - Generates rationale bullets (4-6 analytical points) for each prediction
 - ProphetX chat drawer for user Q&A about predictions
 
@@ -132,9 +140,8 @@ Preferred communication style: Simple, everyday language.
 
 **AI & Data Services**
 - **OpenAI GPT-5**: Prediction rationale generation, chat responses (via Replit AI Integrations)
-- **Reservoir API**: NFT floor price data (optional, for analytics mode)
-- **CoinGecko API**: Token price data (optional, for analytics mode)  
-- **DexScreener API**: DEX trading data (optional, for analytics mode)
+- **OpenSea API v2**: ✅ Real NFT floor prices (active with `OPENSEA_API_KEY`)
+- **DexScreener API**: Real-time token prices (free, no key required)
 
 **Web3 Stack (Implemented)**
 - **wagmi**: React hooks for Ethereum with injected connector (MetaMask)
