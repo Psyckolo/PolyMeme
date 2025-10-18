@@ -125,18 +125,36 @@ export default function Home() {
     );
   }
 
+  const handleMetamaskLogin = () => {
+    toast({
+      title: "Coming Soon",
+      description: "MetaMask login will be available soon!",
+    });
+  };
+
   // Simplified connect button rendering
   const renderAuthButton = () => {
     if (!isAuthenticated) {
       return (
-        <Button 
-          onClick={handleLogin}
-          className="bg-[#00ffff] hover:bg-[#00ffff]/90 text-black font-bold"
-          data-testid="button-login"
-        >
-          <Wallet className="mr-2 h-4 w-4" />
-          Login with X
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            onClick={handleLogin}
+            className="bg-[#00ffff] hover:bg-[#00ffff]/90 text-black font-bold"
+            data-testid="button-login"
+          >
+            <Wallet className="mr-2 h-4 w-4" />
+            Login with X
+          </Button>
+          <Button 
+            onClick={handleMetamaskLogin}
+            variant="outline"
+            className="border-[#ff00ff] text-[#ff00ff] hover:bg-[#ff00ff]/10"
+            data-testid="button-login-metamask"
+          >
+            <Wallet className="mr-2 h-4 w-4" />
+            Login Metamask
+          </Button>
+        </div>
       );
     }
     

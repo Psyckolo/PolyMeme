@@ -151,14 +151,25 @@ export default function Dashboard() {
                 </Button>
               </>
             ) : (
-              <Button 
-                onClick={() => window.location.href = "/api/login"} 
-                variant="default"
-                data-testid="button-login"
-              >
-                <Wallet className="w-4 h-4 mr-2" />
-                Login with X
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  onClick={() => window.location.href = "/api/login"} 
+                  variant="default"
+                  data-testid="button-login"
+                >
+                  <Wallet className="w-4 h-4 mr-2" />
+                  Login with X
+                </Button>
+                <Button 
+                  onClick={() => toast({ title: "Coming Soon", description: "MetaMask login will be available soon!" })}
+                  variant="outline"
+                  className="border-[#ff00ff] text-[#ff00ff] hover:bg-[#ff00ff]/10"
+                  data-testid="button-login-metamask"
+                >
+                  <Wallet className="w-4 h-4 mr-2" />
+                  Login Metamask
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -170,14 +181,25 @@ export default function Dashboard() {
 
         {!isAuthenticated ? (
           <Card className="p-12 text-center">
-            <p className="text-muted-foreground mb-4">Log in with X (Twitter) to view your dashboard</p>
-            <Button 
-              onClick={() => window.location.href = "/api/login"}
-              data-testid="button-login-dashboard"
-            >
-              <Wallet className="w-4 h-4 mr-2" />
-              Login with X
-            </Button>
+            <p className="text-muted-foreground mb-4">Log in with X (Twitter) or MetaMask to view your dashboard</p>
+            <div className="flex gap-3 justify-center">
+              <Button 
+                onClick={() => window.location.href = "/api/login"}
+                data-testid="button-login-dashboard"
+              >
+                <Wallet className="w-4 h-4 mr-2" />
+                Login with X
+              </Button>
+              <Button 
+                onClick={() => toast({ title: "Coming Soon", description: "MetaMask login will be available soon!" })}
+                variant="outline"
+                className="border-[#ff00ff] text-[#ff00ff] hover:bg-[#ff00ff]/10"
+                data-testid="button-login-metamask-dashboard"
+              >
+                <Wallet className="w-4 h-4 mr-2" />
+                Login Metamask
+              </Button>
+            </div>
           </Card>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
