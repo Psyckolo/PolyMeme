@@ -181,10 +181,11 @@ export default function Dashboard() {
           </Card>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5">
             <TabsTrigger value="positions" data-testid="tab-positions">Positions</TabsTrigger>
             <TabsTrigger value="balance" data-testid="tab-balance">Balance</TabsTrigger>
             <TabsTrigger value="points" data-testid="tab-points">Points</TabsTrigger>
+            <TabsTrigger value="staking" data-testid="tab-staking">Staking</TabsTrigger>
             <TabsTrigger value="history" data-testid="tab-history">History</TabsTrigger>
           </TabsList>
 
@@ -207,6 +208,29 @@ export default function Dashboard() {
 
           <TabsContent value="points" className="space-y-4">
             <PointsPanel userAddress={userAddress} />
+          </TabsContent>
+
+          <TabsContent value="staking" className="space-y-4">
+            <Card className="p-12 text-center">
+              <h3 className="text-2xl font-bold mb-4">Staking - Coming Soon</h3>
+              <p className="text-muted-foreground mb-6">
+                Stake your ProphetX tokens to reduce betting fees and earn rewards.
+              </p>
+              <div className="max-w-md mx-auto text-left space-y-3">
+                <div className="flex items-start gap-2">
+                  <span className="text-primary">•</span>
+                  <span className="text-sm">Reduce trading fees from 2% to as low as 0.5%</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-primary">•</span>
+                  <span className="text-sm">Earn passive rewards from protocol revenue</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-primary">•</span>
+                  <span className="text-sm">Unlock exclusive prediction markets and perks</span>
+                </div>
+              </div>
+            </Card>
           </TabsContent>
 
           <TabsContent value="history" className="space-y-4">
