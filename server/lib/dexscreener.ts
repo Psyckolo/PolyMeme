@@ -36,6 +36,7 @@ interface DexScreenerResponse {
 
 // Token mint addresses (Solana) or contract addresses (Ethereum)
 export const TOKEN_ADDRESSES: Record<string, { address: string; chain: string }> = {
+  // Solana Tokens
   "bonk": { 
     address: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", 
     chain: "solana" 
@@ -44,12 +45,53 @@ export const TOKEN_ADDRESSES: Record<string, { address: string; chain: string }>
     address: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm", 
     chain: "solana" 
   },
+  "popcat": {
+    address: "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr",
+    chain: "solana"
+  },
+  "peanut-the-squirrel": {
+    address: "2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump",
+    chain: "solana"
+  },
+  "goatseus-maximus": {
+    address: "CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump",
+    chain: "solana"
+  },
+  "cat-in-a-dogs-world": {
+    address: "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5",
+    chain: "solana"
+  },
+  "just-a-chill-guy": {
+    address: "Df6yfrKC8kZE3KNkrHERKzAetSxbrWeniQfyJY4Jpump",
+    chain: "solana"
+  },
+  "act-i-the-ai-prophecy": {
+    address: "GJAFwWjJ3vnTsrQVabjBVK2TYB1YtRCQXRDfDgUnpump",
+    chain: "solana"
+  },
+  
+  // Ethereum Tokens
   "pepe": { 
     address: "0x6982508145454Ce325dDbE47a25d4ec3d2311933", 
     chain: "ethereum" 
   },
+  "shiba-inu": {
+    address: "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",
+    chain: "ethereum"
+  },
+  "brett": {
+    address: "0x532f27101965dd16442E59d40670FaF5eBB142E4",
+    chain: "base"
+  },
+  "mog-coin": {
+    address: "0xaaeE1A9723aaDB7afA2810263653A34bA2C21C7a",
+    chain: "ethereum"
+  },
+  "turbo": {
+    address: "0xA35923162C49cF95e6BF26623385eb431ad920D3",
+    chain: "ethereum"
+  },
   "dogecoin": {
-    // Wrapped DOGE on Ethereum or Solana
     address: "0xba2ae424d960c26247dd6c32edc70b295c744c43",
     chain: "ethereum"
   },
