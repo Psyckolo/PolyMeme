@@ -116,8 +116,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let balance = await storage.getBalance(userAddress);
       
       if (!balance) {
-        // Create initial balance
-        balance = await storage.createOrUpdateBalance(userAddress, "1000"); // Start with 1000 USDC
+        // Create initial balance - Start with 5000 USDC
+        balance = await storage.createOrUpdateBalance(userAddress, "5000");
       }
       
       res.json({ balance: balance.balance });
@@ -127,15 +127,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Deposit USDC
+  // Deposit USDC (max 5000 USDC total balance allowed)
   app.post("/api/deposit", async (req, res) => {
     try {
       const parsed = depositSchema.parse(req.body);
       const { userAddress, amount } = parsed;
       
       const currentBalance = await storage.getBalance(userAddress);
-      const currentAmount = currentBalance ? parseFloat(currentBalance.balance) : 0;
-      const newAmount = currentAmount + parseFloat(amount);
+      const currentAmount = currentBalance ? parseFloat(currentBalance.balance) : 5000;
+      const depositAmount = parseFloat(amount);
+      const newAmount = currentAmount + depositAmount;
+      
+      // Maximum total balance is 10000 USDC (5000 initial + 5000 deposit max)
+      const MAX_BALANCE = 10000;
+      if (newAmount > MAX_BALANCE) {
+        return res.status(400).json({ 
+          error: `Maximum balance is ${MAX_BALANCE} USDC (5000 initial + 5000 deposit max). Current balance: ${currentAmount}` 
+        });
+      }
       
       const balance = await storage.createOrUpdateBalance(userAddress, newAmount.toString());
       
