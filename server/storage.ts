@@ -9,17 +9,24 @@ import {
   type InsertRationale,
   type UserStats,
   type InsertUserStats,
+  type User,
+  type UpsertUser,
   markets,
   balances,
   bets,
   rationales,
   userStats,
+  users,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { eq, desc, sql } from "drizzle-orm";
 import { db } from "./db";
 
 export interface IStorage {
+  // Auth (Replit Auth required methods)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  
   // Markets
   createMarket(market: InsertMarket): Promise<Market>;
   getMarket(id: string): Promise<Market | undefined>;
@@ -71,6 +78,7 @@ export class MemStorage implements IStorage {
   private bets: Map<string, Bet>;
   private rationales: Map<string, Rationale>;
   private userStats: Map<string, UserStats>;
+  private usersMap: Map<string, User>;
   private marketIdCounter: number;
 
   constructor() {
@@ -79,7 +87,28 @@ export class MemStorage implements IStorage {
     this.bets = new Map();
     this.rationales = new Map();
     this.userStats = new Map();
+    this.usersMap = new Map();
     this.marketIdCounter = 1;
+  }
+
+  // Auth
+  async getUser(id: string): Promise<User | undefined> {
+    return this.usersMap.get(id);
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const existing = this.usersMap.get(userData.id!);
+    const user: User = {
+      id: userData.id!,
+      email: userData.email || null,
+      firstName: userData.firstName || null,
+      lastName: userData.lastName || null,
+      profileImageUrl: userData.profileImageUrl || null,
+      createdAt: existing?.createdAt || new Date(),
+      updatedAt: new Date(),
+    };
+    this.usersMap.set(user.id, user);
+    return user;
   }
 
   // Markets
@@ -296,6 +325,27 @@ export class MemStorage implements IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Auth
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
   // Markets
   async createMarket(insertMarket: InsertMarket): Promise<Market> {
     // Get the next marketId by finding the max marketId and adding 1

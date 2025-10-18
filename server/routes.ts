@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { generateRationale, answerQuestion } from "./lib/openai";
 import { getTokenPrice } from "./lib/dexscreener";
 import { getNFTFloorPrice } from "./lib/nftfloor";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import {
   depositSchema,
   withdrawSchema,
@@ -12,6 +13,25 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup Replit Auth (X/Twitter login)
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', async (req: any, res) => {
+    try {
+      // Return null if not authenticated instead of 401
+      if (!req.user || !req.user.claims) {
+        return res.json(null);
+      }
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
   // Get today's market
   app.get("/api/market/today", async (req, res) => {
     try {
