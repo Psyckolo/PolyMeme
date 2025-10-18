@@ -104,9 +104,16 @@ export function MarketsTimeline({ selectedMarketId, onSelectMarket }: MarketsTim
         </div>
 
         {market.price0 && market.assetType === 'TOKEN' && (
-          <div className="mt-2 text-sm text-muted-foreground font-mono">
+          <div className="mt-2 text-sm text-muted-foreground font-mono" data-testid="text-token-price">
             Price: {formatPrice(parseFloat(market.price0))}
             {market.price1 && ` → ${formatPrice(parseFloat(market.price1))}`}
+          </div>
+        )}
+        
+        {market.price0 && market.assetType === 'NFT' && (
+          <div className="mt-2 text-sm text-muted-foreground font-mono" data-testid="text-nft-floor">
+            Floor: {parseFloat(market.price0).toFixed(3)} ETH
+            {market.price1 && ` → ${parseFloat(market.price1).toFixed(3)} ETH`}
           </div>
         )}
 

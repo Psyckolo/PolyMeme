@@ -124,6 +124,23 @@ export function PredictionCard({ market, isLoading }: PredictionCardProps) {
           </div>
         </div>
       )}
+      
+      {/* Floor Price Display (for NFTs) */}
+      {market.assetType === 'NFT' && market.price0 && (
+        <div className="mb-6">
+          <div className="p-4 bg-muted/20 rounded-lg">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Starting Floor Price</p>
+            <p className="text-3xl font-mono font-bold" data-testid="text-floor-start">
+              {parseFloat(market.price0).toFixed(3)} ETH
+            </p>
+            {market.price1 && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Final: {parseFloat(market.price1).toFixed(3)} ETH
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Prediction Direction */}
       <div className="flex items-center justify-center gap-6 my-8 p-6 bg-muted/20 rounded-lg backdrop-blur-sm">
