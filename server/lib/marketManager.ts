@@ -258,7 +258,7 @@ export async function createMultipleMarkets(count: number = 4) {
     const now = new Date();
     const startTime = new Date(now);
     const lockTime = new Date(now);
-    lockTime.setHours(lockTime.getHours() + 12);
+    lockTime.setHours(lockTime.getHours() + 2);
     const endTime = new Date(now);
     endTime.setHours(endTime.getHours() + 24);
     

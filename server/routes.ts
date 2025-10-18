@@ -538,13 +538,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const now = new Date();
     const startTime = new Date(now);
     
-    // Lock time is 24 hours from now (when betting closes)
+    // Lock time is 2 hours from now (when betting closes)
     const lockTime = new Date(now);
-    lockTime.setHours(lockTime.getHours() + 24);
+    lockTime.setHours(lockTime.getHours() + 2);
     
-    // End time is 48 hours from now (when market settles)
+    // End time is 24 hours from now (when market settles)
     const endTime = new Date(now);
-    endTime.setHours(endTime.getHours() + 48);
+    endTime.setHours(endTime.getHours() + 24);
     
     const market = await storage.createMarket({
       assetType: randomAsset.type,
