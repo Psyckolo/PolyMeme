@@ -49,6 +49,20 @@ export interface IStorage {
   createOrUpdateUserStats(userAddress: string, updates: Partial<UserStats>): Promise<UserStats>;
   getAllUserStats(): Promise<UserStats[]>;
   getUserByReferralCode(code: string): Promise<UserStats | undefined>;
+  
+  // Activity
+  getRecentActivity(): Promise<{
+    activeBets: number;
+    totalVolume: string;
+    largestBet: string;
+    recentBets: Array<{
+      id: string;
+      userAddress: string;
+      prediction: "RIGHT" | "WRONG";
+      amount: string;
+      createdAt: string;
+    }>;
+  }>;
 }
 
 export class MemStorage implements IStorage {
@@ -251,6 +265,33 @@ export class MemStorage implements IStorage {
     return Array.from(this.userStats.values()).find(
       (stats) => stats.referralCode === code
     );
+  }
+  
+  async getRecentActivity() {
+    const allBets = Array.from(this.bets.values())
+      .filter(b => !b.claimed)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    const activeBets = allBets.length;
+    const totalVolume = allBets.reduce((sum, bet) => sum + parseFloat(bet.amount), 0).toString();
+    const largestBet = allBets.length > 0 
+      ? Math.max(...allBets.map(b => parseFloat(b.amount))).toString()
+      : "0";
+    
+    const recentBets = allBets.slice(0, 5).map(bet => ({
+      id: bet.id,
+      userAddress: bet.userAddress,
+      prediction: bet.side as "RIGHT" | "WRONG",
+      amount: bet.amount,
+      createdAt: bet.createdAt.toISOString(),
+    }));
+    
+    return {
+      activeBets,
+      totalVolume,
+      largestBet,
+      recentBets,
+    };
   }
 }
 
@@ -493,6 +534,38 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userStats.referralCode, code));
     
     return stats;
+  }
+  
+  async getRecentActivity() {
+    // Get all unclaimed bets (active bets)
+    const allBets = await db
+      .select()
+      .from(bets)
+      .where(eq(bets.claimed, false))
+      .orderBy(desc(bets.createdAt));
+    
+    // Calculate statistics
+    const activeBets = allBets.length;
+    const totalVolume = allBets.reduce((sum, bet) => sum + parseFloat(bet.amount), 0).toString();
+    const largestBet = allBets.length > 0 
+      ? Math.max(...allBets.map(b => parseFloat(b.amount))).toString()
+      : "0";
+    
+    // Get recent 5 bets for display
+    const recentBets = allBets.slice(0, 5).map(bet => ({
+      id: bet.id,
+      userAddress: bet.userAddress,
+      prediction: bet.side as "RIGHT" | "WRONG",
+      amount: bet.amount,
+      createdAt: bet.createdAt.toISOString(),
+    }));
+    
+    return {
+      activeBets,
+      totalVolume,
+      largestBet,
+      recentBets,
+    };
   }
 }
 

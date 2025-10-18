@@ -226,6 +226,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get recent activity
+  app.get("/api/recent-activity", async (req, res) => {
+    try {
+      const activity = await storage.getRecentActivity();
+      res.json(activity);
+    } catch (error) {
+      console.error("Error fetching recent activity:", error);
+      res.status(500).json({ error: "Failed to fetch recent activity" });
+    }
+  });
+
   // Get user positions
   app.get("/api/positions/:userAddress", async (req, res) => {
     try {
