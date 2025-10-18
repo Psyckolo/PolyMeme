@@ -36,7 +36,7 @@ interface DexScreenerResponse {
 
 // Token mint addresses (Solana) or contract addresses (Ethereum)
 export const TOKEN_ADDRESSES: Record<string, { address: string; chain: string }> = {
-  // Solana Tokens
+  // Solana Tokens - Verified with DexScreener API
   "bonk": { 
     address: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", 
     chain: "solana" 
@@ -69,8 +69,56 @@ export const TOKEN_ADDRESSES: Record<string, { address: string; chain: string }>
     address: "GJAFwWjJ3vnTsrQVabjBVK2TYB1YtRCQXRDfDgUnpump",
     chain: "solana"
   },
+  "fartcoin": {
+    address: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
+    chain: "solana"
+  },
+  "slerf": {
+    address: "7BgBvyjrZX1YKz4oh9mjb8ZScatkkwb8DzFx7LoiVkM3",
+    chain: "solana"
+  },
+  "book-of-meme": {
+    address: "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82",
+    chain: "solana"
+  },
+  "michicoin": {
+    address: "5mbK36SZ7J19An8jFochhQS4of8g6BwUjbeCSxBSoWdp",
+    chain: "solana"
+  },
+  "moo-deng": {
+    address: "ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY",
+    chain: "solana"
+  },
+  "giga": {
+    address: "63LfDmNb3MQ8mw9MtZ2To9bEA2M71kZUUGq5tiJxcqj9",
+    chain: "solana"
+  },
+  "fwog": {
+    address: "A8C3xuqscfmyLrte3VmTqrAq8kgMASius9AFNANwpump",
+    chain: "solana"
+  },
+  "ponke": {
+    address: "5z3EqYQo9HiCEs3R84RCDMu2n7anpDMxRhdK8PSWmrRC",
+    chain: "solana"
+  },
+  "retardio": {
+    address: "6ogzHhzdrQr9Pgv6hZ2MNze7UrzBMAFyBBWUYp1Fhitx",
+    chain: "solana"
+  },
+  "maneki": {
+    address: "Bz4H3VKTa4rEBPdgvngSvKjVNfVfp1YKfLcqAHqS9v9L",
+    chain: "solana"
+  },
+  "smoking-chicken-fish": {
+    address: "4LLbsb5ReP3yEtYzmXewyGjcir5uXtKFURtaEUVC2AHs",
+    chain: "solana"
+  },
+  "peng": {
+    address: "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv",
+    chain: "solana"
+  },
   
-  // Ethereum Tokens
+  // Ethereum/Base Tokens
   "pepe": { 
     address: "0x6982508145454Ce325dDbE47a25d4ec3d2311933", 
     chain: "ethereum" 
