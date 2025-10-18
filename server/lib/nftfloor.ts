@@ -1,99 +1,144 @@
-// NFT Floor Price API integration
-// NOTE: Reservoir API is shutting down in October 2025
-// TODO: Migrate to alternative (Alchemy or NFT Price Floor API)
+// NFT Floor Price API integration using OpenSea API v2
+// Free API, no key required
 
-interface CollectionStats {
-  collection: string;
-  floorAsk: {
-    price: {
-      amount: {
-        native: number;
-      };
-    };
-  } | null;
+interface OpenSeaStats {
+  total: {
+    floor_price: number;
+    floor_price_symbol: string;
+    floor_price_currency: string;
+    one_day_volume: number;
+    seven_day_sales: number;
+    market_cap: number;
+  };
 }
 
+interface OpenSeaResponse {
+  total: {
+    floor_price: number;
+    floor_price_symbol: string;
+    floor_price_currency: string;
+    one_day_volume: number;
+    seven_day_sales: number;
+    market_cap: number;
+  };
+}
+
+// NFT collection slugs mapping (ProphetX ID -> OpenSea slug)
+const NFT_COLLECTIONS: Record<string, string> = {
+  "pudgy-penguins": "pudgypenguins",
+  "milady": "milady",
+  "azuki": "azuki",
+  "doodles": "doodles-official",
+  "cryptopunks": "cryptopunks",
+  "bored-ape-yacht-club": "boredapeyachtclub",
+};
+
 /**
- * Get NFT collection floor price from Reservoir API
- * Currently simulated due to Reservoir shutdown
- * TODO: Implement with Alchemy getFloorPrice API or similar
+ * Get NFT collection floor price from OpenSea API v2
+ * @param collectionSlug - The collection slug (e.g., "pudgy-penguins", "milady")
+ * @returns Floor price in ETH as string or null if not found
  */
 export async function getNFTFloorPrice(collectionSlug: string): Promise<string | null> {
   try {
-    // Map collection slugs to contract addresses
-    const contractMap: Record<string, string> = {
-      "pudgy-penguins": "0xbd3531da5cf5857e7cfaa92426877b022e612cf8",
-      "milady": "0x5af0d9827e0c53e4799bb226655a1de152a425a5",
-      "azuki": "0xed5af388653567af2f388e6224dc7c4b3241c544",
-      "bored-ape-yacht-club": "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
-    };
-
-    const contractAddress = contractMap[collectionSlug];
-    if (!contractAddress) {
-      console.log(`No contract address mapped for ${collectionSlug}, simulating floor price`);
-      // Simulate floor price
-      const basePrice = Math.random() * 5 + 1; // Between 1-6 ETH
-      return basePrice.toFixed(6);
+    const openseaSlug = NFT_COLLECTIONS[collectionSlug];
+    if (!openseaSlug) {
+      console.log(`NFT collection ${collectionSlug} not configured for OpenSea`);
+      return null;
     }
 
-    // TODO: Replace with actual Reservoir or Alchemy API call
-    // For now, simulate floor prices
-    const floorPrices: Record<string, number> = {
-      "pudgy-penguins": 12.5,
-      "milady": 3.2,
-      "azuki": 8.7,
-      "bored-ape-yacht-club": 24.3,
-    };
+    const url = `https://api.opensea.io/api/v2/collections/${openseaSlug}/stats`;
+    console.log(`Fetching floor price for ${collectionSlug} from OpenSea:`, url);
 
-    const floorPrice = floorPrices[collectionSlug] || Math.random() * 5 + 1;
-    console.log(`${collectionSlug} simulated floor price: ${floorPrice.toFixed(2)} ETH`);
-    
-    return floorPrice.toFixed(6);
-    
-    /* TODO: Implement real API call like this:
-    const apiKey = process.env.RESERVOIR_API_KEY || "demo-api-key";
-    const url = `https://api.reservoir.tools/collections/v7?id=${contractAddress}`;
-    
     const response = await fetch(url, {
       headers: {
-        'x-api-key': apiKey,
-        'Content-Type': 'application/json'
-      }
+        'Accept': 'application/json',
+      },
     });
 
     if (!response.ok) {
-      throw new Error(`Reservoir API error: ${response.status}`);
+      console.error(`OpenSea API error: ${response.status} ${response.statusText}`);
+      return null;
     }
 
-    const data = await response.json();
-    const collection = data.collections?.[0];
+    const data: OpenSeaResponse = await response.json();
     
-    if (collection?.floorAsk?.price?.amount?.native) {
-      const floorPrice = collection.floorAsk.price.amount.native;
-      console.log(`${collectionSlug} floor price: ${floorPrice} ETH`);
-      return floorPrice.toString();
+    if (!data.total || data.total.floor_price === undefined) {
+      console.log(`No floor price found for ${collectionSlug}`);
+      return null;
     }
 
-    return null;
-    */
+    const floorPrice = data.total.floor_price;
+    const symbol = data.total.floor_price_symbol || 'ETH';
+    
+    console.log(`${collectionSlug} floor price: ${floorPrice} ${symbol} (OpenSea API)`);
+    console.log(`  - 24h volume: ${data.total.one_day_volume} ${symbol}`);
+    console.log(`  - 7d sales: ${data.total.seven_day_sales}`);
+    
+    return floorPrice.toString();
   } catch (error) {
     console.error(`Error fetching floor price for ${collectionSlug}:`, error);
-    // Fallback to simulated price
-    const fallbackPrice = Math.random() * 5 + 1;
-    return fallbackPrice.toFixed(6);
+    return null;
   }
 }
 
 /**
  * Get NFT floor price with fallback to simulation
+ * @param collectionSlug - The collection slug
+ * @returns Floor price as string (always returns a value)
  */
 export async function getFloorPriceOrFallback(collectionSlug: string): Promise<string> {
-  const price = await getNFTFloorPrice(collectionSlug);
-  if (price) {
-    return price;
-  }
+  const realPrice = await getNFTFloorPrice(collectionSlug);
   
-  // Fallback
-  const fallbackPrice = Math.random() * 5 + 1;
-  return fallbackPrice.toFixed(6);
+  if (realPrice) {
+    return realPrice;
+  }
+
+  // Fallback: simulate a realistic floor price in ETH
+  const fallbackPrices: Record<string, number> = {
+    "pudgy-penguins": 12.5,
+    "milady": 3.2,
+    "azuki": 8.5,
+    "doodles": 2.8,
+    "cryptopunks": 45.0,
+    "bored-ape-yacht-club": 28.0,
+  };
+
+  const basePrice = fallbackPrices[collectionSlug] || 5.0;
+  // Add small random variation (+/- 5%)
+  const variation = (Math.random() - 0.5) * 0.1;
+  const simulatedPrice = basePrice * (1 + variation);
+  
+  console.log(`${collectionSlug} simulated floor price: ${simulatedPrice.toFixed(6)} ETH (API unavailable)`);
+  return simulatedPrice.toFixed(6);
+}
+
+/**
+ * Get NFT collection stats including floor price, volume, and sales
+ * @param collectionSlug - The collection slug
+ * @returns Full stats object or null
+ */
+export async function getNFTStats(collectionSlug: string): Promise<OpenSeaStats | null> {
+  try {
+    const openseaSlug = NFT_COLLECTIONS[collectionSlug];
+    if (!openseaSlug) {
+      return null;
+    }
+
+    const url = `https://api.opensea.io/api/v2/collections/${openseaSlug}/stats`;
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      return null;
+    }
+
+    const data: OpenSeaResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Error fetching stats for ${collectionSlug}:`, error);
+    return null;
+  }
 }
