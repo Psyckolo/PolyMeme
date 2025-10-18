@@ -5,36 +5,36 @@ import { getPriceOrFallback, getTokenPrice } from "./dexscreener";
 import { getFloorPriceOrFallback } from "./nftfloor";
 
 const SOLANA_TOKENS = [
-  { type: "TOKEN", name: "BONK", id: "bonk", logo: "https://assets.coingecko.com/coins/images/28600/small/bonk.jpg" },
-  { type: "TOKEN", name: "WIF", id: "dogwifhat", logo: "https://assets.coingecko.com/coins/images/33566/small/dogwifhat.jpg" },
-  { type: "TOKEN", name: "POPCAT", id: "popcat", logo: "https://assets.coingecko.com/coins/images/38030/small/popcat.png" },
-  { type: "TOKEN", name: "PNUT", id: "peanut-the-squirrel", logo: "https://assets.coingecko.com/coins/images/42555/small/pnut.png" },
-  { type: "TOKEN", name: "GOAT", id: "goatseus-maximus", logo: "https://assets.coingecko.com/coins/images/41469/small/goat.png" },
-  { type: "TOKEN", name: "MEW", id: "cat-in-a-dogs-world", logo: "https://assets.coingecko.com/coins/images/36796/small/mew.png" },
-  { type: "TOKEN", name: "FARTCOIN", id: "fartcoin", logo: "https://assets.coingecko.com/coins/images/42555/small/fart.png" },
-  { type: "TOKEN", name: "CHILLGUY", id: "just-a-chill-guy", logo: "https://assets.coingecko.com/coins/images/42970/small/chill.png" },
-  { type: "TOKEN", name: "MOODENG", id: "moo-deng", logo: "https://assets.coingecko.com/coins/images/42366/small/moodeng.png" },
-  { type: "TOKEN", name: "GIGA", id: "giga", logo: "https://assets.coingecko.com/coins/images/42150/small/giga.png" },
-  { type: "TOKEN", name: "ACT", id: "act-i-the-ai-prophecy", logo: "https://assets.coingecko.com/coins/images/41710/small/act.png" },
-  { type: "TOKEN", name: "FWOG", id: "fwog", logo: "https://assets.coingecko.com/coins/images/41345/small/fwog.png" },
-  { type: "TOKEN", name: "SLERF", id: "slerf", logo: "https://assets.coingecko.com/coins/images/36269/small/slerf.png" },
-  { type: "TOKEN", name: "BOME", id: "book-of-meme", logo: "https://assets.coingecko.com/coins/images/36297/small/bome.png" },
-  { type: "TOKEN", name: "MICHI", id: "michicoin", logo: "https://assets.coingecko.com/coins/images/36923/small/michi.png" },
-  { type: "TOKEN", name: "PENGU", id: "pengu", logo: "https://assets.coingecko.com/coins/images/43632/small/pengu.png" },
-  { type: "TOKEN", name: "AI16Z", id: "ai16z", logo: "https://assets.coingecko.com/coins/images/42255/small/ai16z.png" },
+  { type: "TOKEN", name: "BONK", id: "bonk", logo: "https://assets.coingecko.com/coins/images/28600/large/bonk.jpg" },
+  { type: "TOKEN", name: "WIF", id: "dogwifhat", logo: "https://assets.coingecko.com/coins/images/33566/large/dogwifhat.jpg" },
+  { type: "TOKEN", name: "POPCAT", id: "popcat", logo: "https://assets.coingecko.com/coins/images/38030/large/popcat.png" },
+  { type: "TOKEN", name: "PNUT", id: "peanut-the-squirrel", logo: "https://assets.coingecko.com/coins/images/42555/large/Peanut_the_Squirrel.jpg" },
+  { type: "TOKEN", name: "GOAT", id: "goatseus-maximus", logo: "https://assets.coingecko.com/coins/images/41469/large/goat.jpeg" },
+  { type: "TOKEN", name: "MEW", id: "cat-in-a-dogs-world", logo: "https://assets.coingecko.com/coins/images/36796/large/mew.jpg" },
+  { type: "TOKEN", name: "FARTCOIN", id: "fartcoin", logo: "https://assets.coingecko.com/coins/images/42555/large/fart.png" },
+  { type: "TOKEN", name: "CHILLGUY", id: "just-a-chill-guy", logo: "https://assets.coingecko.com/coins/images/42970/large/chill.png" },
+  { type: "TOKEN", name: "MOODENG", id: "moo-deng", logo: "https://assets.coingecko.com/coins/images/42366/large/moodeng.png" },
+  { type: "TOKEN", name: "GIGA", id: "giga", logo: "https://assets.coingecko.com/coins/images/42150/large/giga.png" },
+  { type: "TOKEN", name: "ACT", id: "act-i-the-ai-prophecy", logo: "https://assets.coingecko.com/coins/images/41710/large/act.jpg" },
+  { type: "TOKEN", name: "FWOG", id: "fwog", logo: "https://assets.coingecko.com/coins/images/41345/large/fwog.png" },
+  { type: "TOKEN", name: "SLERF", id: "slerf", logo: "https://assets.coingecko.com/coins/images/36269/large/slerf.png" },
+  { type: "TOKEN", name: "BOME", id: "book-of-meme", logo: "https://assets.coingecko.com/coins/images/36297/large/bome.png" },
+  { type: "TOKEN", name: "MICHI", id: "michicoin", logo: "https://assets.coingecko.com/coins/images/36923/large/michi.png" },
+  { type: "TOKEN", name: "PENGU", id: "pengu", logo: "https://assets.coingecko.com/coins/images/43632/large/pengu.png" },
+  { type: "TOKEN", name: "AI16Z", id: "ai16z", logo: "https://assets.coingecko.com/coins/images/42255/large/ai16z.png" },
 ];
 
 const ETH_TOKENS = [
-  { type: "TOKEN", name: "PEPE", id: "pepe", logo: "https://assets.coingecko.com/coins/images/29850/small/pepe-token.jpeg" },
-  { type: "TOKEN", name: "SHIB", id: "shiba-inu", logo: "https://assets.coingecko.com/coins/images/11939/small/shiba.png" },
-  { type: "TOKEN", name: "FLOKI", id: "floki", logo: "https://assets.coingecko.com/coins/images/16746/small/floki.png" },
-  { type: "TOKEN", name: "BRETT", id: "brett", logo: "https://assets.coingecko.com/coins/images/36395/small/brett.png" },
-  { type: "TOKEN", name: "MOG", id: "mog-coin", logo: "https://assets.coingecko.com/coins/images/30915/small/mog.png" },
-  { type: "TOKEN", name: "TURBO", id: "turbo", logo: "https://assets.coingecko.com/coins/images/30075/small/turbo.png" },
-  { type: "TOKEN", name: "DEGEN", id: "degen-base", logo: "https://assets.coingecko.com/coins/images/34515/small/degen.png" },
-  { type: "TOKEN", name: "SPX6900", id: "spx6900", logo: "https://assets.coingecko.com/coins/images/31537/small/spx.png" },
-  { type: "TOKEN", name: "TOSHI", id: "toshi", logo: "https://assets.coingecko.com/coins/images/31980/small/toshi.png" },
-  { type: "TOKEN", name: "HIGHER", id: "higher", logo: "https://assets.coingecko.com/coins/images/36113/small/higher.png" },
+  { type: "TOKEN", name: "PEPE", id: "pepe", logo: "https://assets.coingecko.com/coins/images/29850/large/pepe-token.jpeg" },
+  { type: "TOKEN", name: "SHIB", id: "shiba-inu", logo: "https://assets.coingecko.com/coins/images/11939/large/shiba.png" },
+  { type: "TOKEN", name: "FLOKI", id: "floki", logo: "https://assets.coingecko.com/coins/images/16746/large/floki.png" },
+  { type: "TOKEN", name: "BRETT", id: "brett", logo: "https://assets.coingecko.com/coins/images/36395/large/brett.jpg" },
+  { type: "TOKEN", name: "MOG", id: "mog-coin", logo: "https://assets.coingecko.com/coins/images/30915/large/mog.png" },
+  { type: "TOKEN", name: "TURBO", id: "turbo", logo: "https://assets.coingecko.com/coins/images/30075/large/turbo.png" },
+  { type: "TOKEN", name: "DEGEN", id: "degen-base", logo: "https://assets.coingecko.com/coins/images/34515/large/degen.png" },
+  { type: "TOKEN", name: "SPX6900", id: "spx6900", logo: "https://assets.coingecko.com/coins/images/31537/large/spx.png" },
+  { type: "TOKEN", name: "TOSHI", id: "toshi", logo: "https://assets.coingecko.com/coins/images/31980/large/toshi.png" },
+  { type: "TOKEN", name: "HIGHER", id: "higher", logo: "https://assets.coingecko.com/coins/images/36113/large/higher.png" },
 ];
 
 const NFTS = [
@@ -65,68 +65,83 @@ const ASSETS = [...SOLANA_TOKENS, ...ETH_TOKENS, ...NFTS];
 
 export async function createDailyMarket() {
   try {
-    console.log("Creating daily market...");
+    console.log("Creating 4 daily markets (2 tokens + 2 NFTs)...");
     
-    // Select random asset
-    const randomAsset = ASSETS[Math.floor(Math.random() * ASSETS.length)];
-    const direction = Math.random() > 0.5 ? "UP" : "DOWN";
-    const thresholdBps = Math.random() > 0.7 ? 300 : 500; // 3% or 5%
+    // Select 2 random tokens
+    const allTokens = [...SOLANA_TOKENS, ...ETH_TOKENS];
+    const shuffledTokens = allTokens.sort(() => Math.random() - 0.5);
+    const selectedTokens = shuffledTokens.slice(0, 2);
     
-    const now = new Date();
-    const startTime = new Date(now);
+    // Select 2 random NFTs
+    const shuffledNFTs = NFTS.sort(() => Math.random() - 0.5);
+    const selectedNFTs = shuffledNFTs.slice(0, 2);
     
-    // Lock time is 2 hours from now (when betting closes) - T+2h
-    const lockTime = new Date(now);
-    lockTime.setHours(lockTime.getHours() + 2);
+    const selectedAssets = [...selectedTokens, ...selectedNFTs];
+    const createdMarkets = [];
     
-    // End time is 24 hours from now (when market settles) - T+24h
-    const endTime = new Date(now);
-    endTime.setHours(endTime.getHours() + 24);
-    
-    // Get real price from DexScreener or NFT floor price API
-    let price0 = "0";
-    if (randomAsset.type === "TOKEN") {
-      price0 = await getPriceOrFallback(randomAsset.id);
-      console.log(`${randomAsset.name} starting price: $${price0}`);
-    } else {
-      // For NFTs, get floor price (currently simulated)
-      price0 = await getFloorPriceOrFallback(randomAsset.id);
-      console.log(`${randomAsset.name} starting floor price: ${price0} ETH`);
+    for (const asset of selectedAssets) {
+      const direction = Math.random() > 0.5 ? "UP" : "DOWN";
+      const thresholdBps = Math.random() > 0.7 ? 300 : 500; // 3% or 5%
+      
+      const now = new Date();
+      const startTime = new Date(now);
+      
+      // Lock time is 2 hours from now (when betting closes) - T+2h
+      const lockTime = new Date(now);
+      lockTime.setHours(lockTime.getHours() + 2);
+      
+      // End time is 24 hours from now (when market settles) - T+24h
+      const endTime = new Date(now);
+      endTime.setHours(endTime.getHours() + 24);
+      
+      // Get real price from DexScreener or NFT floor price API
+      let price0 = "0";
+      if (asset.type === "TOKEN") {
+        price0 = await getPriceOrFallback(asset.id);
+        console.log(`${asset.name} starting price: $${price0}`);
+      } else {
+        // For NFTs, get floor price from OpenSea API
+        price0 = await getFloorPriceOrFallback(asset.id);
+        console.log(`${asset.name} starting floor price: ${price0} ETH`);
+      }
+      
+      const market = await storage.createMarket({
+        assetType: asset.type,
+        assetId: asset.id,
+        assetName: asset.name,
+        assetLogo: asset.logo,
+        direction,
+        thresholdBps,
+        startTime,
+        lockTime,
+        endTime,
+        price0,
+        price1: null,
+      });
+      
+      // Generate AI rationale
+      const rationaleData = await generateRationale(
+        asset.type,
+        asset.name,
+        direction,
+        thresholdBps / 100,
+        "simulate"
+      );
+      
+      await storage.createRationale({
+        marketId: market.id,
+        content: JSON.stringify(rationaleData.bullets),
+        dataMode: "simulate",
+      });
+      
+      console.log(`✅ Market created: ${asset.name} ${direction} ${thresholdBps / 100}%`);
+      createdMarkets.push(market);
     }
     
-    const market = await storage.createMarket({
-      assetType: randomAsset.type,
-      assetId: randomAsset.id,
-      assetName: randomAsset.name,
-      assetLogo: randomAsset.logo,
-      direction,
-      thresholdBps,
-      startTime,
-      lockTime,
-      endTime,
-      price0,
-      price1: null,
-    });
-    
-    // Generate AI rationale
-    const rationaleData = await generateRationale(
-      randomAsset.type,
-      randomAsset.name,
-      direction,
-      thresholdBps / 100,
-      "simulate"
-    );
-    
-    await storage.createRationale({
-      marketId: market.id,
-      content: JSON.stringify(rationaleData.bullets),
-      dataMode: "simulate",
-    });
-    
-    console.log(`Market created: ${randomAsset.name} ${direction} ${thresholdBps / 100}%`);
-    return market;
+    console.log(`✅ Successfully created ${createdMarkets.length} markets`);
+    return createdMarkets;
   } catch (error) {
-    console.error("Error creating daily market:", error);
+    console.error("Error creating daily markets:", error);
   }
 }
 
