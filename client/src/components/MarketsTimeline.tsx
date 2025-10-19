@@ -114,14 +114,14 @@ export function MarketsTimeline({ selectedMarketId, onSelectMarket }: MarketsTim
           </div>
         )}
 
-        <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+        <div className="mt-2 space-y-1 text-xs">
           <div>
-            <span className="text-foreground/70 font-medium">AI RIGHT: </span>
-            <span className="font-mono font-bold text-[hsl(var(--neon-magenta))]">{parseFloat(market.poolRight).toFixed(0)} USDC</span>
+            <span className="text-muted-foreground">AI RIGHT: </span>
+            <span className="font-mono text-[hsl(var(--neon-magenta))]">{parseFloat(market.poolRight).toFixed(0)} USDC</span>
           </div>
           <div>
-            <span className="text-foreground/70 font-medium">AI WRONG: </span>
-            <span className="font-mono font-bold text-[hsl(var(--neon-cyan))]">{parseFloat(market.poolWrong).toFixed(0)} USDC</span>
+            <span className="text-muted-foreground">AI WRONG: </span>
+            <span className="font-mono text-[hsl(var(--neon-cyan))]">{parseFloat(market.poolWrong).toFixed(0)} USDC</span>
           </div>
         </div>
       </div>
