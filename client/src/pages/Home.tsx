@@ -269,7 +269,7 @@ export default function Home() {
             <span className="text-[hsl(var(--neon-cyan))]">X</span>
           </h2>
           <p className="text-xl md:text-2xl text-foreground max-w-2xl mx-auto leading-relaxed">
-            Every day, the AI makes one prediction on NFT floors or token prices.{" "}
+            Every day, the AI makes predictions on NFT floors and token prices.{" "}
             <span className="text-[hsl(var(--neon-magenta))] font-bold">Bet if it's RIGHT</span>
             {" "}or{" "}
             <span className="text-[hsl(var(--neon-cyan))] font-bold">if it's WRONG</span>.
@@ -285,7 +285,7 @@ export default function Home() {
               </div>
               <CardTitle className="text-lg">AI Prediction</CardTitle>
               <CardDescription>
-                GPT-5 analyzes market data and makes one daily prediction on crypto assets
+                GPT-5 analyzes market data and makes daily predictions on crypto assets
               </CardDescription>
             </CardHeader>
           </Card>
