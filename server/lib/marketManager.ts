@@ -77,7 +77,7 @@ export async function createDailyMarket() {
     
     for (const asset of selectedAssets) {
       const direction = Math.random() > 0.5 ? "UP" : "DOWN";
-      const thresholdBps = Math.random() > 0.7 ? 300 : 500; // 3% or 5%
+      const thresholdBps = 0; // No threshold - simple UP/DOWN prediction
       
       const now = new Date();
       const startTime = new Date(now);
@@ -120,7 +120,7 @@ export async function createDailyMarket() {
         asset.type,
         asset.name,
         direction,
-        thresholdBps / 100,
+        0, // No threshold percentage
         "simulate"
       );
       
@@ -130,7 +130,7 @@ export async function createDailyMarket() {
         dataMode: "simulate",
       });
       
-      console.log(`✅ Market created: ${asset.name} ${direction} ${thresholdBps / 100}%`);
+      console.log(`✅ Market created: ${asset.name} ${direction}`);
       createdMarkets.push(market);
     }
     
@@ -151,7 +151,6 @@ export async function settleMarket(marketId: string) {
     }
     
     const price0 = parseFloat(market.price0 || "0");
-    const thresholdPercent = market.thresholdBps / 100;
     
     // Get real ending price for tokens
     let price1 = price0;
@@ -161,43 +160,39 @@ export async function settleMarket(marketId: string) {
         price1 = parseFloat(realPrice);
         console.log(`Real ending price for ${market.assetName}: $${price1}`);
       } else {
-        // Fallback: simulate if API fails
-        const randomFactor = (Math.random() - 0.5) * 2;
-        const actualMove = thresholdPercent * (0.8 + randomFactor * 0.6);
-        price1 = market.direction === "UP"
-          ? price0 * (1 + actualMove / 100)
-          : price0 * (1 - actualMove / 100);
+        // Fallback: simulate small price movement if API fails
+        const randomMove = (Math.random() - 0.5) * 0.1; // ±5%
+        price1 = price0 * (1 + randomMove);
         console.log(`Simulated ending price (API unavailable): $${price1}`);
       }
     } else {
-      // For NFTs, get ending floor price (currently simulated)
+      // For NFTs, get ending floor price
       const realFloor = await getFloorPriceOrFallback(market.assetId);
       if (realFloor) {
         price1 = parseFloat(realFloor);
         console.log(`Real ending floor price for ${market.assetName}: ${price1} ETH`);
       } else {
-        // Fallback: simulate if API fails
-        const randomFactor = (Math.random() - 0.5) * 2;
-        const actualMove = thresholdPercent * (0.8 + randomFactor * 0.6);
-        price1 = market.direction === "UP"
-          ? price0 * (1 + actualMove / 100)
-          : price0 * (1 - actualMove / 100);
+        // Fallback: simulate small price movement if API fails
+        const randomMove = (Math.random() - 0.5) * 0.1; // ±5%
+        price1 = price0 * (1 + randomMove);
         console.log(`Simulated ending floor price (API unavailable): ${price1} ETH`);
       }
     }
     
-    // Determine winner
+    // Simple winner determination based on direction
     const actualPercent = ((price1 - price0) / price0) * 100;
     let winner: "RIGHT" | "WRONG" | "TIE" = "WRONG";
     
+    // UP prediction: RIGHT if price went up, WRONG if price went down
+    // DOWN prediction: RIGHT if price went down, WRONG if price went up
     if (market.direction === "UP") {
-      winner = actualPercent >= thresholdPercent ? "RIGHT" : "WRONG";
+      winner = price1 > price0 ? "RIGHT" : "WRONG";
     } else {
-      winner = actualPercent <= -thresholdPercent ? "RIGHT" : "WRONG";
+      winner = price1 < price0 ? "RIGHT" : "WRONG";
     }
     
-    // Check for tie (within 0.1% of threshold)
-    if (Math.abs(Math.abs(actualPercent) - thresholdPercent) < 0.1) {
+    // TIE if price stayed exactly the same (very rare)
+    if (price1 === price0) {
       winner = "TIE";
     }
     
@@ -208,7 +203,7 @@ export async function settleMarket(marketId: string) {
       settledAt: new Date(),
     });
     
-    console.log(`Market settled: Winner = ${winner}, Price: $${price0} → ${price1.toFixed(6)} (${actualPercent.toFixed(2)}%)`);
+    console.log(`Market settled: Winner = ${winner}, ${market.direction} prediction, Price: $${price0} → ${price1.toFixed(6)} (${actualPercent.toFixed(2)}%)`);
   } catch (error) {
     console.error("Error settling market:", error);
   }
@@ -254,7 +249,7 @@ export async function createMultipleMarkets(count: number = 4) {
   
   for (const asset of assetsToUse) {
     const direction = Math.random() > 0.5 ? "UP" : "DOWN";
-    const thresholdBps = Math.random() > 0.7 ? 300 : 500;
+    const thresholdBps = 0; // No threshold - simple UP/DOWN prediction
     
     const now = new Date();
     const startTime = new Date(now);
@@ -292,7 +287,7 @@ export async function createMultipleMarkets(count: number = 4) {
       asset.type,
       asset.name,
       direction,
-      thresholdBps / 100,
+      0, // No threshold percentage
       "simulate"
     );
     
@@ -302,7 +297,7 @@ export async function createMultipleMarkets(count: number = 4) {
       dataMode: "simulate",
     });
     
-    console.log(`Market created: ${asset.name} ${direction} ${thresholdBps / 100}%`);
+    console.log(`Market created: ${asset.name} ${direction}`);
     
     // Small delay between creations
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -335,16 +330,24 @@ export function startMarketScheduler() {
   
   console.log("Market scheduler started");
   
-  // Create initial markets if needed (ensure 4 active markets)
+  // Create initial markets only if none created today
   setTimeout(async () => {
     const markets = await storage.getAllMarkets();
-    const activeMarkets = markets.filter(m => m.status === "OPEN");
     
-    if (activeMarkets.length === 0) {
-      await createMultipleMarkets(4);
-    } else if (activeMarkets.length < 4) {
-      // Top up to 4 active markets
-      await createMultipleMarkets(4 - activeMarkets.length);
+    // Check if any markets were created in the last 24 hours
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const recentMarkets = markets.filter(m => {
+      const createdAt = new Date(m.createdAt);
+      return createdAt > twentyFourHoursAgo;
+    });
+    
+    // Only create markets if none were created in the last 24 hours
+    if (recentMarkets.length === 0) {
+      console.log("No markets created in last 24h, creating 4 new markets...");
+      await createDailyMarket();
+    } else {
+      console.log(`${recentMarkets.length} markets already created in last 24h, skipping creation`);
     }
   }, 1000);
 }

@@ -63,8 +63,6 @@ export function PredictionCard({ market, isLoading }: PredictionCardProps) {
     return "default";
   };
 
-  const thresholdPercent = (market.thresholdBps / 100).toFixed(1);
-
   return (
     <Card 
       className="relative w-full max-w-3xl mx-auto p-8 bg-card border-2 border-card-border overflow-hidden"
@@ -161,9 +159,8 @@ export function PredictionCard({ market, isLoading }: PredictionCardProps) {
         <div className="text-center">
           <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">AI Predicts</p>
           <p className="text-5xl font-bold font-mono" data-testid="text-prediction">
-            {market.direction}
             <span className={market.direction === "UP" ? "text-[hsl(var(--neon-green))]" : "text-destructive"}>
-              {" "}{market.direction === "UP" ? "+" : ""}{thresholdPercent}%
+              {market.direction}
             </span>
           </p>
         </div>

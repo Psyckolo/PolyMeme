@@ -44,7 +44,6 @@ export function MarketsTimeline({ selectedMarketId, onSelectMarket }: MarketsTim
 
   const MarketCard = ({ market }: { market: Market }) => {
     const status = getMarketStatus(market);
-    const thresholdPercent = (market.thresholdBps / 100).toFixed(1);
     const isSelected = selectedMarketId === market.id;
 
     return (
@@ -99,7 +98,7 @@ export function MarketsTimeline({ selectedMarketId, onSelectMarket }: MarketsTim
             <ArrowDown className="w-5 h-5 text-destructive" />
           )}
           <span className="font-mono font-bold">
-            {market.direction} {market.direction === "UP" ? "+" : ""}{thresholdPercent}%
+            {market.direction}
           </span>
         </div>
 
