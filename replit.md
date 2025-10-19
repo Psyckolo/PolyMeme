@@ -4,7 +4,7 @@
 
 ProphetX is a Web3 prediction market platform where an AI oracle makes daily predictions on crypto assets (NFT floors or token prices). Users bet whether the AI is RIGHT or WRONG using USDC, with winners claiming from a pari-mutuel pool after 24-hour settlement.
 
-The platform features a cyberpunk/degen aesthetic with neon accents (magenta for AI RIGHT, cyan for AI WRONG), real-time pool visualization, and simulated or analytics-driven predictions powered by OpenAI's GPT-5.
+The platform features a cyberpunk/degen aesthetic with neon accents (magenta for AI RIGHT, cyan for AI WRONG), real-time pool visualization, and simplified directional predictions (UP or DOWN only - no threshold percentages). Predictions are powered by OpenAI's GPT-5.
 
 ## User Preferences
 
@@ -89,16 +89,22 @@ Preferred communication style: Simple, everyday language.
 - **Tracking**: Volume traded, referral count, referrer address stored in `user_stats`
 
 **Market Lifecycle Management**
-- **Cron-based scheduler** using `node-cron` for daily market creation
-- **4 active markets** created daily at 9am with guaranteed 50/50 mix:
+- **Cron-based scheduler** using `node-cron` for daily market creation (runs at 9am daily)
+- **Exactly 4 markets created every 24 hours** with guaranteed 50/50 mix:
   - 2 TOKEN markets (BONK, PEPE, WIF, DOGE)
   - 2 NFT markets (Pudgy Penguins, Milady)
   - Selection randomized from each pool to ensure diversity
+- **Safeguard against duplicate creation**: Server startup checks if markets were created in last 24h before creating new ones
 - Market states: OPEN → LOCKED → SETTLED/REFUND
-- Automated settlement logic via oracle agent
+- **Simplified settlement logic**: 
+  - UP prediction wins if final price > starting price (any increase)
+  - DOWN prediction wins if final price < starting price (any decrease)
+  - TIE if prices are exactly equal (very rare)
+  - No threshold percentages - simple directional betting
 - Market timing: lockTime = creation + 2h, endTime = creation + 24h
 - `getTodayMarket()` returns most recent market by `createdAt` timestamp (descending)
 - Users can select any active market from MarketsTimeline to place bets
+- All markets created with `thresholdBps=0` (field kept in schema for compatibility but not used)
 
 **AI Integration Architecture**
 - **OpenAI GPT-5** via Replit AI Integrations service (no API key required)
