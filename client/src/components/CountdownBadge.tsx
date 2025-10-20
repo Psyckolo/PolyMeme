@@ -51,7 +51,7 @@ export function CountdownBadge({ targetTime, label, variant = "default" }: Count
   return (
     <Badge 
       variant={getBadgeVariant()} 
-      className={`font-mono text-base px-4 py-2 ${isUrgent ? "animate-pulse" : ""}`}
+      className={`font-mono text-base px-4 py-2 ${isUrgent ? "animate-pulse" : ""} ${variant === "locked" ? "bg-[hsl(var(--neon-cyan))]/30 text-[hsl(var(--neon-cyan))] border-[hsl(var(--neon-cyan))]/60 shadow-[0_0_10px_rgba(0,255,255,0.4)]" : ""}`}
       data-testid="badge-countdown"
     >
       <Clock className="w-4 h-4 mr-2" />

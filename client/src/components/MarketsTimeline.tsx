@@ -72,7 +72,7 @@ export function MarketsTimeline({ selectedMarketId, onSelectMarket }: MarketsTim
           </div>
           
           {status === "active" && (
-            <Badge className="bg-[hsl(var(--neon-cyan))]/20 text-[hsl(var(--neon-cyan))] border-[hsl(var(--neon-cyan))]">
+            <Badge className="bg-[hsl(var(--neon-cyan))]/30 text-[hsl(var(--neon-cyan))] border-[hsl(var(--neon-cyan))]/60 shadow-[0_0_10px_rgba(0,255,255,0.4)]">
               <Clock className="w-3 h-3 mr-1" />
               Active
             </Badge>
@@ -84,7 +84,7 @@ export function MarketsTimeline({ selectedMarketId, onSelectMarket }: MarketsTim
             </Badge>
           )}
           {status === "settled" && market.winner && (
-            <Badge className={market.winner === "RIGHT" ? "bg-[hsl(var(--neon-magenta))]/20 text-[hsl(var(--neon-magenta))]" : "bg-[hsl(var(--neon-cyan))]/20 text-[hsl(var(--neon-cyan))]"}>
+            <Badge className={market.winner === "RIGHT" ? "bg-[hsl(var(--neon-magenta))]/30 text-[hsl(var(--neon-magenta))] border-[hsl(var(--neon-magenta))]/60 shadow-[0_0_10px_rgba(255,0,255,0.4)]" : "bg-[hsl(var(--neon-cyan))]/30 text-[hsl(var(--neon-cyan))] border-[hsl(var(--neon-cyan))]/60 shadow-[0_0_10px_rgba(0,255,255,0.4)]"}>
               {market.winner === "RIGHT" ? <CheckCircle2 className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
               AI {market.winner === "RIGHT" ? "RIGHT" : "WRONG"}
             </Badge>

@@ -139,7 +139,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <>
-                <Badge variant="outline" className="border-[#00ffff] text-[#00ffff]" data-testid="badge-user-name">
+                <Badge variant="outline" className="bg-[hsl(var(--neon-cyan))]/20 border-[hsl(var(--neon-cyan))]/60 text-[hsl(var(--neon-cyan))] shadow-[0_0_8px_rgba(0,255,255,0.3)]" data-testid="badge-user-name">
                   {user?.firstName || user?.email || "User"}
                 </Badge>
                 <Button 

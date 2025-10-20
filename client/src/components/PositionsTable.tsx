@@ -82,7 +82,7 @@ export function PositionsTable({ positions, onClaim, onViewRationale }: Position
                   <TableCell>
                     <Badge 
                       variant={position.side === "RIGHT" ? "default" : "secondary"}
-                      className={position.side === "RIGHT" ? "bg-[hsl(var(--neon-magenta))]" : "bg-[hsl(var(--neon-cyan))]"}
+                      className={position.side === "RIGHT" ? "bg-[hsl(var(--neon-magenta))]/80 text-white border-[hsl(var(--neon-magenta))] shadow-[0_0_10px_rgba(255,0,255,0.4)]" : "bg-[hsl(var(--neon-cyan))]/80 text-white border-[hsl(var(--neon-cyan))] shadow-[0_0_10px_rgba(0,255,255,0.4)]"}
                     >
                       AI {position.side}
                     </Badge>
@@ -95,12 +95,14 @@ export function PositionsTable({ positions, onClaim, onViewRationale }: Position
                       <Badge variant="outline">Claimed</Badge>
                     ) : position.market?.status === "SETTLED" ? (
                       isWinner ? (
-                        <Badge variant="default" className="bg-[hsl(var(--neon-green))]">
+                        <Badge variant="default" className="bg-[hsl(var(--neon-green))]/80 text-white border-[hsl(var(--neon-green))] shadow-[0_0_10px_rgba(0,255,136,0.4)]">
                           <Trophy className="w-3 h-3 mr-1" /> Won
                         </Badge>
                       ) : (
                         <Badge variant="destructive">Lost</Badge>
                       )
+                    ) : position.market?.status === "LOCKED" ? (
+                      <Badge className="bg-[hsl(var(--neon-cyan))]/30 text-[hsl(var(--neon-cyan))] border-[hsl(var(--neon-cyan))]/60 shadow-[0_0_10px_rgba(0,255,255,0.4)]">LOCKED</Badge>
                     ) : (
                       <Badge variant="secondary">{position.market?.status || "Pending"}</Badge>
                     )}
@@ -159,10 +161,10 @@ export function PositionsTable({ positions, onClaim, onViewRationale }: Position
                           )}
                         </div>
                         <Button
-                          variant="link"
+                          variant="ghost"
                           size="sm"
                           onClick={() => onViewRationale(position.marketId)}
-                          className="text-primary"
+                          className="text-primary hover:text-primary"
                           data-testid={`button-rationale-${position.id}`}
                         >
                           View AI Rationale
