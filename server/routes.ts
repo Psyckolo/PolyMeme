@@ -295,7 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Claim winnings
+  // Claim winnings - Claims ALL unclaimed bets for a user on a market
   app.post("/api/claim", async (req, res) => {
     try {
       const parsed = claimSchema.parse(req.body);
@@ -310,61 +310,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Market not settled yet" });
       }
       
-      const userBets = await storage.getMarketBets(marketId);
-      const userBet = userBets.find(
+      const allMarketBets = await storage.getMarketBets(marketId);
+      // Get ALL unclaimed bets for this user on this market
+      const userUnclaimedBets = allMarketBets.filter(
         (b) => b.userAddress.toLowerCase() === userAddress.toLowerCase() && !b.claimed
       );
       
-      if (!userBet) {
-        return res.status(404).json({ error: "No unclaimed bet found" });
+      if (userUnclaimedBets.length === 0) {
+        return res.status(404).json({ error: "No unclaimed bets found" });
       }
       
-      // Calculate payout
-      let payout = 0;
-      const totalPool = parseFloat(market.poolRight) + parseFloat(market.poolWrong);
-      const betAmount = parseFloat(userBet.amount);
+      // Process ALL unclaimed bets
+      let totalPayout = 0;
+      let totalBonusPoints = 0;
+      const winningPool = market.winner === "RIGHT" ? parseFloat(market.poolRight) : parseFloat(market.poolWrong);
+      const losingPool = market.winner === "RIGHT" ? parseFloat(market.poolWrong) : parseFloat(market.poolRight);
       
-      if (market.winner === "TIE") {
-        // Refund
-        payout = betAmount;
-      } else if (market.winner === userBet.side) {
-        // Winner - calculate pari-mutuel payout
-        const winningPool = market.winner === "RIGHT" ? parseFloat(market.poolRight) : parseFloat(market.poolWrong);
-        const losingPool = market.winner === "RIGHT" ? parseFloat(market.poolWrong) : parseFloat(market.poolRight);
+      for (const userBet of userUnclaimedBets) {
+        let payout = 0;
+        const betAmount = parseFloat(userBet.amount);
         
-        const share = betAmount / winningPool;
-        const grossPayout = betAmount + (losingPool * share);
+        if (market.winner === "TIE") {
+          // Refund
+          payout = betAmount;
+        } else if (market.winner === userBet.side) {
+          // Winner - calculate pari-mutuel payout
+          const share = betAmount / winningPool;
+          const grossPayout = betAmount + (losingPool * share);
+          
+          // Apply 2% fee
+          payout = grossPayout * 0.98;
+          
+          // Award bonus points (30% of bet amount for winners)
+          totalBonusPoints += Math.floor(betAmount * 0.3);
+        }
         
-        // Apply 2% fee
-        payout = grossPayout * 0.98;
+        if (payout > 0) {
+          // Update bet
+          await storage.updateBet(userBet.id, {
+            claimed: true,
+            payout: payout.toString(),
+          });
+          
+          totalPayout += payout;
+        }
       }
       
-      if (payout > 0) {
-        // Update bet
-        await storage.updateBet(userBet.id, {
-          claimed: true,
-          payout: payout.toString(),
-        });
-        
-        // Credit balance
+      if (totalPayout > 0) {
+        // Credit total balance
         const balance = await storage.getBalance(userAddress);
         const currentBalance = balance ? parseFloat(balance.balance) : 0;
-        await storage.createOrUpdateBalance(userAddress, (currentBalance + payout).toString());
+        await storage.createOrUpdateBalance(userAddress, (currentBalance + totalPayout).toString());
         
-        // Award bonus points if bet won (30% bonus on bet amount for winners)
-        let bonusPoints = 0;
-        if (market.winner === userBet.side && market.winner !== "TIE") {
-          bonusPoints = Math.floor(betAmount * 0.3); // 30% of bet amount as bonus points
+        // Award total bonus points
+        if (totalBonusPoints > 0) {
           const currentStats = await storage.getUserStats(userAddress);
           await storage.createOrUpdateUserStats(userAddress, {
-            points: (currentStats?.points || 0) + bonusPoints,
+            points: (currentStats?.points || 0) + totalBonusPoints,
           });
         }
         
         res.json({ 
           success: true, 
-          payout: payout.toString(),
-          bonusPoints: bonusPoints 
+          betsClaimed: userUnclaimedBets.length,
+          totalPayout: totalPayout.toString(),
+          bonusPoints: totalBonusPoints 
         });
       } else {
         res.status(400).json({ error: "No payout available" });
