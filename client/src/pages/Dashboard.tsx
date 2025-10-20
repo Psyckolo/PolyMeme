@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { PositionsTable } from "@/components/PositionsTable";
 import { BalancePanel } from "@/components/BalancePanel";
 import { PointsPanel } from "@/components/PointsPanel";
+import { HistoryPanel } from "@/components/HistoryPanel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Wallet, LogOut } from "lucide-react";
@@ -256,11 +257,7 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="history" className="space-y-4">
-            <Card className="p-12 text-center">
-              <p className="text-muted-foreground">
-                Market history coming soon! Your past predictions will appear here.
-              </p>
-            </Card>
+            <HistoryPanel userAddress={userAddress} />
           </TabsContent>
         </Tabs>
         )}
