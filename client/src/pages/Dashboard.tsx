@@ -162,13 +162,13 @@ export default function Dashboard() {
                   Login with X
                 </Button>
                 <Button 
-                  onClick={() => toast({ title: "Coming Soon", description: "MetaMask login will be available soon!" })}
+                  onClick={() => toast({ title: "Coming Soon", description: "Phantom login will be available soon!" })}
                   variant="outline"
                   className="border-[#ff00ff] text-[#ff00ff] hover:bg-[#ff00ff]/10"
-                  data-testid="button-login-metamask"
+                  data-testid="button-login-phantom"
                 >
                   <Wallet className="w-4 h-4 mr-2" />
-                  Metamask soon
+                  Phantom soon
                 </Button>
               </div>
             )}
@@ -182,7 +182,7 @@ export default function Dashboard() {
 
         {!isAuthenticated ? (
           <Card className="p-12 text-center">
-            <p className="text-muted-foreground mb-4">Log in with X (Twitter) or MetaMask to view your dashboard</p>
+            <p className="text-muted-foreground mb-4">Log in with X (Twitter) or Phantom to view your dashboard</p>
             <div className="flex gap-3 justify-center">
               <Button 
                 onClick={() => window.location.href = "/auth/twitter"}
@@ -192,13 +192,13 @@ export default function Dashboard() {
                 Login with X
               </Button>
               <Button 
-                onClick={() => toast({ title: "Coming Soon", description: "MetaMask login will be available soon!" })}
+                onClick={() => toast({ title: "Coming Soon", description: "Phantom login will be available soon!" })}
                 variant="outline"
                 className="border-[#ff00ff] text-[#ff00ff] hover:bg-[#ff00ff]/10"
-                data-testid="button-login-metamask-dashboard"
+                data-testid="button-login-phantom-dashboard"
               >
                 <Wallet className="w-4 h-4 mr-2" />
-                Metamask soon
+                Phantom soon
               </Button>
             </div>
           </Card>

@@ -143,10 +143,10 @@ export default function Home() {
     );
   }
 
-  const handleMetamaskLogin = () => {
+  const handlePhantomLogin = () => {
     toast({
       title: "Coming Soon",
-      description: "MetaMask login will be available soon!",
+      description: "Phantom login will be available soon!",
     });
   };
 
@@ -164,13 +164,13 @@ export default function Home() {
             Login with X
           </Button>
           <Button 
-            onClick={handleMetamaskLogin}
+            onClick={handlePhantomLogin}
             variant="outline"
             className="border-[#ff00ff] text-[#ff00ff] hover:bg-[#ff00ff]/10"
-            data-testid="button-login-metamask"
+            data-testid="button-login-phantom"
           >
             <Wallet className="mr-2 h-4 w-4" />
-            Metamask soon
+            Phantom soon
           </Button>
         </div>
       );
