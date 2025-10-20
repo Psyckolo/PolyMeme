@@ -307,9 +307,10 @@ export async function createMultipleMarkets(count: number = 4) {
 }
 
 export function startMarketScheduler() {
-  // Create daily markets at 9 AM (4 markets)
-  cron.schedule("0 9 * * *", async () => {
-    await createMultipleMarkets(4);
+  // Create 1 new market every 4 hours (at 0h, 4h, 8h, 12h, 16h, 20h)
+  cron.schedule("0 */4 * * *", async () => {
+    console.log("Creating new market (every 4 hours)...");
+    await createMultipleMarkets(1);
   });
   
   // Check for markets to lock every 5 minutes
@@ -328,26 +329,26 @@ export function startMarketScheduler() {
     }
   });
   
-  console.log("Market scheduler started");
+  console.log("Market scheduler started (1 market every 4 hours)");
   
-  // Create initial markets only if none created today
+  // Create initial market if none created in the last 4 hours
   setTimeout(async () => {
     const markets = await storage.getAllMarkets();
     
-    // Check if any markets were created in the last 24 hours
+    // Check if any markets were created in the last 4 hours
     const now = new Date();
-    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
     const recentMarkets = markets.filter(m => {
       const createdAt = new Date(m.createdAt);
-      return createdAt > twentyFourHoursAgo;
+      return createdAt > fourHoursAgo;
     });
     
-    // Only create markets if none were created in the last 24 hours
+    // Only create market if none were created in the last 4 hours
     if (recentMarkets.length === 0) {
-      console.log("No markets created in last 24h, creating 4 new markets...");
-      await createDailyMarket();
+      console.log("No markets created in last 4h, creating 1 new market...");
+      await createMultipleMarkets(1);
     } else {
-      console.log(`${recentMarkets.length} markets already created in last 24h, skipping creation`);
+      console.log(`${recentMarkets.length} market(s) already created in last 4h, skipping creation`);
     }
   }, 1000);
 }
