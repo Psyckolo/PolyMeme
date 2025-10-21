@@ -274,6 +274,19 @@ export default function Home() {
             {" "}or{" "}
             <span className="text-[hsl(var(--neon-cyan))] font-bold">if it's WRONG</span>.
           </p>
+          
+          <div className="mt-4">
+            <a
+              href="https://pump.fun/coin/9YtiWEDKHmVWPHQ8Uk4V2CMPBqj4ZzGNu26n4Ke3pump"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm font-mono text-[hsl(var(--neon-cyan))] hover:text-[hsl(var(--neon-cyan))]/80 transition-colors hover-elevate px-3 py-1.5 rounded-md border border-[hsl(var(--neon-cyan))]/30 bg-[hsl(var(--neon-cyan))]/5"
+              data-testid="link-prox-token"
+            >
+              <span className="text-muted-foreground">$PROX address:</span>
+              <span className="font-bold">9YtiWEDKHmVWPHQ8Uk4V2CMPBqj4ZzGNu26n4Ke3pump</span>
+            </a>
+          </div>
         </div>
 
         {/* How It Works */}
