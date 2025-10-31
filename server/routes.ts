@@ -10,6 +10,7 @@ import {
   withdrawSchema,
   placeBetSchema,
   claimSchema,
+  connectSolanaSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -187,7 +188,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/bet", async (req, res) => {
     try {
       const parsed = placeBetSchema.parse(req.body);
-      const { marketId, userAddress, side, amount } = parsed;
+      const { marketId, userAddress, side, amount, mode, currency } = parsed;
       
       const market = await storage.getMarket(marketId);
       if (!market) {
@@ -203,16 +204,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (now > new Date(market.lockTime)) {
         return res.status(400).json({ error: "Market is locked" });
       }
+
+      const betMode = mode || "simulated";
+      const betCurrency = currency || "USDC";
       
-      // Check user balance
-      const balance = await storage.getBalance(userAddress);
-      if (!balance || parseFloat(balance.balance) < parseFloat(amount)) {
-        return res.status(400).json({ error: "Insufficient balance" });
+      // For simulated mode (USDC), check and deduct balance
+      if (betMode === "simulated") {
+        const balance = await storage.getBalance(userAddress);
+        if (!balance || parseFloat(balance.balance) < parseFloat(amount)) {
+          return res.status(400).json({ error: "Insufficient balance" });
+        }
+        
+        // Deduct from balance
+        const newBalance = parseFloat(balance.balance) - parseFloat(amount);
+        await storage.updateBalance(userAddress, newBalance.toString());
       }
       
-      // Deduct from balance
-      const newBalance = parseFloat(balance.balance) - parseFloat(amount);
-      await storage.updateBalance(userAddress, newBalance.toString());
+      // For mainnet mode (SOL), we assume the user has paid via Solana transaction
+      // In production, we would verify the transaction signature here
       
       // Update pool
       const poolKey = side === "RIGHT" ? "poolRight" : "poolWrong";
@@ -229,12 +238,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userAddress,
         side,
         amount,
+        mode: betMode,
+        currency: betCurrency,
         ticketId,
       });
       
       // Update user stats: add points (1 point per USDC wagered) and update volume
       const betAmount = parseFloat(amount);
-      const points = Math.floor(betAmount); // 1 point per USDC
+      const points = Math.floor(betAmount); // 1 point per USDC or SOL
       
       const currentStats = await storage.getUserStats(userAddress);
       const currentVolume = parseFloat(currentStats?.volumeTraded || "0");
@@ -245,7 +256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         volumeTraded: (currentVolume + betAmount).toString(),
       });
       
-      res.json({ success: true, bet, pointsEarned: points });
+      res.json({ success: true, bet, pointsEarned: points, mode: betMode });
     } catch (error: any) {
       console.error("Error placing bet:", error);
       res.status(400).json({ error: error.message || "Failed to place bet" });
@@ -495,6 +506,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
       res.status(500).json({ error: "Failed to fetch leaderboard" });
+    }
+  });
+
+  // Solana Integration Endpoints
+  
+  // Connect Solana address to user account
+  app.post("/api/solana/connect", async (req, res) => {
+    try {
+      const parsed = connectSolanaSchema.parse(req.body);
+      const { userAddress, solanaAddress } = parsed;
+      
+      const stats = await storage.connectSolanaAddress(userAddress, solanaAddress);
+      
+      res.json({ 
+        success: true, 
+        solanaAddress: stats.solanaAddress 
+      });
+    } catch (error: any) {
+      console.error("Error connecting Solana address:", error);
+      res.status(400).json({ error: error.message || "Failed to connect Solana address" });
+    }
+  });
+
+  // Get Solana address for a user
+  app.get("/api/solana/address/:userAddress", async (req, res) => {
+    try {
+      const { userAddress } = req.params;
+      const solanaAddress = await storage.getSolanaAddress(userAddress);
+      
+      res.json({ solanaAddress });
+    } catch (error) {
+      console.error("Error fetching Solana address:", error);
+      res.status(500).json({ error: "Failed to fetch Solana address" });
     }
   });
 

@@ -99,7 +99,9 @@ export const bets = pgTable("bets", {
   marketId: varchar("market_id").notNull().references(() => markets.id),
   userAddress: text("user_address").notNull(),
   side: text("side").notNull(), // RIGHT or WRONG
-  amount: text("amount").notNull(), // USDC amount
+  amount: text("amount").notNull(), // USDC or SOL amount depending on mode
+  mode: text("mode").notNull().default("simulated"), // simulated (USDC) or mainnet (SOL)
+  currency: text("currency").notNull().default("USDC"), // USDC or SOL
   ticketId: text("ticket_id").notNull(), // ERC-1155 token ID (marketId * 10 + 1 or 2)
   claimed: boolean("claimed").notNull().default(false),
   payout: text("payout"), // calculated payout after settlement
@@ -119,6 +121,7 @@ export const rationales = pgTable("rationales", {
 export const userStats = pgTable("user_stats", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userAddress: text("user_address").notNull().unique(),
+  solanaAddress: text("solana_address"),
   totalBets: integer("total_bets").notNull().default(0),
   wonBets: integer("won_bets").notNull().default(0),
   totalWagered: text("total_wagered").notNull().default("0"),
@@ -196,6 +199,13 @@ export const placeBetSchema = z.object({
   userAddress: z.string(),
   side: z.enum(["RIGHT", "WRONG"]),
   amount: z.string(),
+  mode: z.enum(["simulated", "mainnet"]).optional().default("simulated"),
+  currency: z.enum(["USDC", "SOL"]).optional().default("USDC"),
+});
+
+export const connectSolanaSchema = z.object({
+  userAddress: z.string(),
+  solanaAddress: z.string(),
 });
 
 export const claimSchema = z.object({
@@ -213,3 +223,4 @@ export type WithdrawRequest = z.infer<typeof withdrawSchema>;
 export type PlaceBetRequest = z.infer<typeof placeBetSchema>;
 export type ClaimRequest = z.infer<typeof claimSchema>;
 export type ApplyReferralRequest = z.infer<typeof applyReferralSchema>;
+export type ConnectSolanaRequest = z.infer<typeof connectSolanaSchema>;

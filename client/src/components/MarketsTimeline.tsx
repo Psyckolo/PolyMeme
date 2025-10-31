@@ -173,10 +173,8 @@ export function MarketsTimeline({ selectedMarketId, onSelectMarket }: MarketsTim
               {settledMarkets.slice(0, 5).map(market => <MarketCard key={market.id} market={market} />)}
             </div>
             {settledMarkets.length > 5 && (
-              <Link href="/dashboard">
-                <a className="text-sm text-primary hover:underline mt-2 inline-block">
-                  View all {settledMarkets.length} settled markets →
-                </a>
+              <Link href="/dashboard" className="text-sm text-primary hover:underline mt-2 inline-block">
+                View all {settledMarkets.length} settled markets →
               </Link>
             )}
           </div>

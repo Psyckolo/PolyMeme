@@ -57,6 +57,10 @@ export interface IStorage {
   getAllUserStats(): Promise<UserStats[]>;
   getUserByReferralCode(code: string): Promise<UserStats | undefined>;
   
+  // Solana Integration
+  connectSolanaAddress(userAddress: string, solanaAddress: string): Promise<UserStats>;
+  getSolanaAddress(userAddress: string): Promise<string | null>;
+  
   // Activity
   getRecentActivity(): Promise<{
     activeBets: number;
@@ -200,6 +204,8 @@ export class MemStorage implements IStorage {
     const bet: Bet = {
       ...insertBet,
       id,
+      mode: insertBet.mode || "simulated",
+      currency: insertBet.currency || "USDC",
       claimed: false,
       payout: null,
       createdAt: new Date(),
@@ -265,6 +271,7 @@ export class MemStorage implements IStorage {
     const defaults: UserStats = {
       id: randomUUID(),
       userAddress: key,
+      solanaAddress: null,
       totalBets: 0,
       wonBets: 0,
       totalWagered: "0",
@@ -294,6 +301,16 @@ export class MemStorage implements IStorage {
     return Array.from(this.userStats.values()).find(
       (stats) => stats.referralCode === code
     );
+  }
+
+  // Solana Integration
+  async connectSolanaAddress(userAddress: string, solanaAddress: string): Promise<UserStats> {
+    return this.createOrUpdateUserStats(userAddress, { solanaAddress });
+  }
+
+  async getSolanaAddress(userAddress: string): Promise<string | null> {
+    const stats = await this.getUserStats(userAddress);
+    return stats?.solanaAddress || null;
   }
   
   async getRecentActivity() {
@@ -553,6 +570,7 @@ export class DatabaseStorage implements IStorage {
       .insert(userStats)
       .values({
         userAddress: key,
+        solanaAddress: updates.solanaAddress ?? null,
         totalBets: updates.totalBets ?? 0,
         wonBets: updates.wonBets ?? 0,
         totalWagered: updates.totalWagered ?? "0",
@@ -584,6 +602,16 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userStats.referralCode, code));
     
     return stats;
+  }
+
+  // Solana Integration
+  async connectSolanaAddress(userAddress: string, solanaAddress: string): Promise<UserStats> {
+    return this.createOrUpdateUserStats(userAddress, { solanaAddress });
+  }
+
+  async getSolanaAddress(userAddress: string): Promise<string | null> {
+    const stats = await this.getUserStats(userAddress);
+    return stats?.solanaAddress || null;
   }
   
   async getRecentActivity() {
