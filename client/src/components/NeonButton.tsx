@@ -24,10 +24,10 @@ export function NeonButton({
 }: NeonButtonProps) {
   const getVariantStyles = () => {
     if (variant === "right") {
-      return "bg-[hsl(var(--neon-magenta))] hover:bg-[hsl(var(--neon-magenta))] text-white border-2 border-[hsl(var(--neon-magenta))] shadow-[0_0_20px_rgba(255,0,255,0.4)] hover:shadow-[0_0_30px_rgba(255,0,255,0.6)] transition-all";
+      return "bg-[hsl(var(--neon-magenta))] hover:bg-[hsl(var(--neon-magenta))] text-white border-2 border-[hsl(var(--neon-magenta))] shadow-[0_0_25px_rgba(255,0,255,0.5)] hover:shadow-[0_0_40px_rgba(255,0,255,0.8)] transition-all animate-pulse-glow";
     }
     if (variant === "wrong") {
-      return "bg-[hsl(var(--neon-cyan))] hover:bg-[hsl(var(--neon-cyan))] text-white border-2 border-[hsl(var(--neon-cyan))] shadow-[0_0_20px_rgba(0,255,255,0.4)] hover:shadow-[0_0_30px_rgba(0,255,255,0.6)] transition-all";
+      return "bg-[hsl(var(--neon-cyan))] hover:bg-[hsl(var(--neon-cyan))] text-white border-2 border-[hsl(var(--neon-cyan))] shadow-[0_0_25px_rgba(0,255,255,0.5)] hover:shadow-[0_0_40px_rgba(0,255,255,0.8)] transition-all animate-pulse-glow";
     }
     return "";
   };

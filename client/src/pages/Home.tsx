@@ -33,8 +33,8 @@ export default function Home() {
   useEffect(() => {
     if (isAuthenticated && !wasAuthenticated) {
       toast({
-        title: "Logged In",
-        description: `Welcome ${user?.firstName || user?.email || "back"}!`,
+        title: "🔥 You're In",
+        description: `GM ${user?.firstName || user?.email || "anon"}! Let's ape some predictions`,
       });
       setWasAuthenticated(true);
     } else if (!isAuthenticated && wasAuthenticated) {
@@ -103,14 +103,14 @@ export default function Home() {
       await queryClient.refetchQueries({ queryKey: ["/api/markets"] });
       
       toast({
-        title: "Bet Placed!",
-        description: "Your prediction has been recorded.",
+        title: "🎯 Bet Locked In!",
+        description: "Your prediction is on-chain. LFG!",
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Bet Failed",
-        description: error.message || "Failed to place bet. Please try again.",
+        title: "❌ Bet Failed",
+        description: error.message || "Transaction failed anon. Try again.",
         variant: "destructive",
       });
     },
@@ -119,8 +119,8 @@ export default function Home() {
   const handleBet = async (side: "RIGHT" | "WRONG", amount: string, mode?: "simulated" | "mainnet", currency?: "USDC" | "SOL") => {
     if (!isAuthenticated || !userAddress) {
       toast({
-        title: "Not Logged In",
-        description: "Please log in with X (Twitter) to place a bet.",
+        title: "🚫 Hold Up Anon",
+        description: "Connect your wallet first to start aping",
         variant: "destructive",
       });
       return;

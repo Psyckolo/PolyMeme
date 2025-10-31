@@ -52,14 +52,14 @@ export default function Dashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/balance", userAddress] });
       toast({
-        title: "Deposit Successful",
-        description: "USDC has been added to your balance.",
+        title: "💰 Deposit Confirmed",
+        description: "USDC loaded to your bag. Ready to ape!",
       });
     },
     onError: () => {
       toast({
-        title: "Deposit Failed",
-        description: "Please try again.",
+        title: "❌ Deposit Failed",
+        description: "Transaction didn't go through anon. Try again.",
         variant: "destructive",
       });
     },
@@ -73,14 +73,14 @@ export default function Dashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/balance", userAddress] });
       toast({
-        title: "Withdrawal Successful",
-        description: "USDC has been sent to your wallet.",
+        title: "💸 Withdrawal Complete",
+        description: "USDC sent to your wallet. You're good to go!",
       });
     },
     onError: () => {
       toast({
-        title: "Withdrawal Failed",
-        description: "Please try again.",
+        title: "❌ Withdrawal Failed",
+        description: "Couldn't process the tx. Try again anon.",
         variant: "destructive",
       });
     },
@@ -103,14 +103,14 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/balance", userAddress] });
       queryClient.invalidateQueries({ queryKey: ["/api/positions", userAddress] });
       toast({
-        title: "🎉 Claim Successful!",
-        description: "Your winnings have been added to your balance.",
+        title: "🎉 WAGMI! Claim Successful",
+        description: "Profits secured anon. Stack those gains!",
       });
     },
     onError: () => {
       toast({
-        title: "Claim Failed",
-        description: "Please try again.",
+        title: "❌ Claim Failed",
+        description: "Couldn't claim. Try again.",
         variant: "destructive",
       });
     },

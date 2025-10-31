@@ -39,9 +39,9 @@ export function BetPanel({ market, userBalance, isConnected, onBet, onConnect }:
     return (
       <Card className="w-full max-w-3xl mx-auto p-8 bg-card border-2 border-card-border">
         <div className="text-center space-y-4">
-          <p className="text-muted-foreground">Connect your wallet to place bets</p>
+          <p className="text-muted-foreground">Connect to start aping predictions</p>
           <NeonButton onClick={onConnect} size="lg" testId="button-connect-wallet">
-            Connect Twitter
+            🔗 Connect Twitter
           </NeonButton>
         </div>
       </Card>
@@ -52,7 +52,7 @@ export function BetPanel({ market, userBalance, isConnected, onBet, onConnect }:
     return (
       <Card className="w-full max-w-3xl mx-auto p-8 bg-card border-2 border-card-border">
         <div className="text-center text-muted-foreground">
-          {!market ? "No active market" : "Betting is closed for this market"}
+          {!market ? "⏳ No active market - check back soon anon" : "🔒 Market locked - settlement incoming"}
         </div>
       </Card>
     );
@@ -66,7 +66,7 @@ export function BetPanel({ market, userBalance, isConnected, onBet, onConnect }:
     return (
       <Card className="w-full max-w-3xl mx-auto p-8 bg-card border-2 border-card-border">
         <div className="text-center text-muted-foreground">
-          Market is locked. Wait for settlement.
+          🔒 Market locked - Oracle settling... WAGMI
         </div>
       </Card>
     );
@@ -75,8 +75,8 @@ export function BetPanel({ market, userBalance, isConnected, onBet, onConnect }:
   return (
     <Card className="w-full max-w-3xl mx-auto p-8 bg-card border-2 border-card-border space-y-6">
       {/* Balance Display */}
-      <div className="flex items-center justify-between p-4 bg-muted/20 rounded-lg">
-        <span className="text-sm text-muted-foreground">Your Balance</span>
+      <div className="flex items-center justify-between p-4 bg-muted/20 rounded-lg border border-muted/40">
+        <span className="text-sm text-muted-foreground uppercase tracking-wider">💰 Bag</span>
         <span className="font-mono text-xl font-bold" data-testid="text-user-balance">
           {parseFloat(displayBalance).toLocaleString(undefined, { maximumFractionDigits: 4 })} <span className="text-sm text-muted-foreground">{currency}</span>
         </span>
@@ -85,30 +85,42 @@ export function BetPanel({ market, userBalance, isConnected, onBet, onConnect }:
       {/* Amount Input */}
       <div className="space-y-2">
         <Label htmlFor="bet-amount" className="text-sm uppercase tracking-wide text-muted-foreground">
-          Bet Amount ({currency})
+          🎲 Bet Size ({currency})
         </Label>
         <Input
           id="bet-amount"
           type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          placeholder="Enter amount"
+          placeholder="How much you sending?"
           className="font-mono text-lg"
           min="0"
           step="0.01"
           data-testid="input-bet-amount"
         />
         <div className="flex gap-2">
-          {["10", "50", "100", "500"].map((preset) => (
-            <button
-              key={preset}
-              onClick={() => setAmount(preset)}
-              className="px-3 py-1 text-xs bg-muted hover-elevate active-elevate-2 rounded-md font-mono"
-              data-testid={`button-preset-${preset}`}
-            >
-              {preset}
-            </button>
-          ))}
+          {currency === "SOL" 
+            ? ["0.1", "0.5", "1", "5"].map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setAmount(preset)}
+                  className="px-3 py-1 text-xs bg-muted hover-elevate active-elevate-2 rounded-md font-mono font-bold"
+                  data-testid={`button-preset-${preset}`}
+                >
+                  {preset}◎
+                </button>
+              ))
+            : ["10", "50", "100", "500"].map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setAmount(preset)}
+                  className="px-3 py-1 text-xs bg-muted hover-elevate active-elevate-2 rounded-md font-mono font-bold"
+                  data-testid={`button-preset-${preset}`}
+                >
+                  ${preset}
+                </button>
+              ))
+          }
         </div>
       </div>
 
@@ -123,9 +135,9 @@ export function BetPanel({ market, userBalance, isConnected, onBet, onConnect }:
           testId="button-bet-right"
         >
           {isPlacingBet ? (
-            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Placing Bet...</>
+            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> SENDING...</>
           ) : (
-            "Bet AI RIGHT"
+            "🚀 AI RIGHT"
           )}
         </NeonButton>
         <NeonButton
@@ -137,9 +149,9 @@ export function BetPanel({ market, userBalance, isConnected, onBet, onConnect }:
           testId="button-bet-wrong"
         >
           {isPlacingBet ? (
-            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Placing Bet...</>
+            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> SENDING...</>
           ) : (
-            "Bet AI WRONG"
+            "🔻 AI WRONG"
           )}
         </NeonButton>
       </div>

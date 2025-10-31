@@ -34,18 +34,18 @@ export function SolanaWalletButton() {
       size="sm"
       onClick={connectWallet}
       disabled={isConnecting}
-      className="bg-gradient-to-r from-[hsl(var(--neon-magenta))] to-[hsl(var(--neon-cyan))] hover:opacity-90"
+      className="bg-gradient-to-r from-[hsl(var(--neon-magenta))] to-[hsl(var(--neon-cyan))] hover:opacity-90 font-bold"
       data-testid="button-connect-sol-wallet"
     >
       {isConnecting ? (
         <>
           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          Connecting...
+          Linking Phantom...
         </>
       ) : (
         <>
           <Wallet className="w-4 h-4 mr-2" />
-          Connect Phantom
+          👻 Connect Phantom
         </>
       )}
     </Button>
