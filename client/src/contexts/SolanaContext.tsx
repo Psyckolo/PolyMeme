@@ -47,6 +47,21 @@ export function SolanaProvider({ children }: { children: ReactNode }) {
       const balance = await connection.getBalance(response.publicKey);
       setSolBalance(balance / 1e9); // Convert lamports to SOL
 
+      // Register Solana address with backend (associate with Twitter account if logged in)
+      // For now, use the Solana address as userAddress
+      try {
+        await fetch('/api/solana/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userAddress: publicKey, // Using Solana address as userAddress for now
+            solanaAddress: publicKey,
+          }),
+        });
+      } catch (err) {
+        console.error('Failed to register Solana address:', err);
+      }
+
       console.log('Wallet connected:', publicKey);
     } catch (error) {
       console.error('Wallet connection failed:', error);

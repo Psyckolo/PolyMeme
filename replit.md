@@ -1,10 +1,10 @@
-# ProphetX - AI Prediction Markets
+# Polymeme - Degen AI Prediction Markets
 
 ## Overview
 
-ProphetX is a Web3 prediction market platform where an AI oracle makes daily predictions on crypto assets (NFT floors or token prices). Users bet whether the AI is RIGHT or WRONG using USDC, with winners claiming from a pari-mutuel pool after 24-hour settlement.
+Polymeme is a Web3 prediction market platform where an AI oracle makes predictions on crypto assets (NFT floors or token prices). Users bet whether the AI is RIGHT or WRONG using either USDC (simulated mode) or SOL (mainnet mode), with winners claiming from a pari-mutuel pool after 24-hour settlement.
 
-The platform features a cyberpunk/degen aesthetic with neon accents (magenta for AI RIGHT, cyan for AI WRONG), real-time pool visualization, and simplified directional predictions (UP or DOWN only - no threshold percentages). Predictions are powered by OpenAI's GPT-5.
+The platform features a cyberpunk/degen aesthetic with neon accents (magenta for AI RIGHT, cyan for AI WRONG), dual-mode betting system (simulated vs mainnet), Solana wallet integration, real-time pool visualization, and simplified directional predictions (UP or DOWN only - no threshold percentages). Predictions are powered by OpenAI's GPT-5.
 
 ## User Preferences
 
@@ -37,15 +37,18 @@ Preferred communication style: Simple, everyday language.
 - No global state management library (Redux/Zustand) - uses React Query cache as source of truth
 
 **Key Pages & Components**
-- **Home** (`/`): Landing page with selected market prediction card, betting interface, markets timeline, and past markets
-- **Dashboard** (`/dashboard`): User positions table, balance management, claim winnings, points & referrals
+- **Home** (`/`): Landing page with mode switch, Solana wallet button, selected market prediction card, betting interface, markets timeline, and past markets
+- **Dashboard** (`/dashboard`): User positions table, balance management (USDC + SOL), claim winnings, points & referrals
   - **Positions Tab**: Active bets, claim winnings, view rationale
-  - **Balance Tab**: Deposit/withdraw USDC
+  - **Balance Tab**: SOL balance card (mainnet mode), deposit/withdraw USDC (simulated mode)
   - **Points Tab**: Airdrop points, referral system, leaderboard
   - **History Tab**: Past market results (coming soon)
 - **Shared Components**: 
+  - ModeSwitch: Toggle between simulated (USDC) and mainnet (SOL) modes
+  - SolanaWalletButton: Connect/disconnect Phantom wallet
+  - SolanaBalanceCard: Display SOL balance with refresh option
   - PredictionCard: Displays selected market with real-time price updates (TOKEN markets only)
-  - BetPanel: Betting interface for AI RIGHT/WRONG on selected market
+  - BetPanel: Betting interface for AI RIGHT/WRONG on selected market (adapts currency based on mode)
   - MarketsTimeline: Shows all 4 active markets with status indicators - **clickable to select market for betting**
   - PastMarkets: Shows recently settled markets with outcomes and price changes
   - PointsPanel: Points dashboard, referral management, leaderboard
@@ -77,6 +80,10 @@ Preferred communication style: Simple, everyday language.
 - Neon serverless PostgreSQL via `DATABASE_URL` environment variable
 - Database connection configured in `server/db.ts`
 - Schema pushed to database via `npm run db:push`
+- **Solana Integration Fields**:
+  - `user_stats.solanaAddress`: Stores connected Phantom wallet address
+  - `bets.mode`: 'simulated' (USDC) or 'mainnet' (SOL)
+  - `bets.currency`: 'USDC' or 'SOL'
 
 **Points & Referral System**
 - **Points Earning**: 1 point per USDC wagered (auto-calculated on each bet)
@@ -135,12 +142,15 @@ Preferred communication style: Simple, everyday language.
 - `/api/price/:marketId` - Real-time price data for TOKEN markets
 - `/api/balance/:userAddress` - User USDC balance
 - `/api/positions/:userAddress` - User's bet positions with market data
-- `/api/bet` - Place bet on AI RIGHT or AI WRONG (awards points automatically)
+- `/api/bet` - Place bet on AI RIGHT or AI WRONG (supports mode/currency params, awards points automatically)
 - `/api/claim` - Claim winnings from settled markets
 - `/api/stats/:userAddress` - User stats (points, volume, referrals)
 - `/api/referral/generate` - Generate unique 6-character referral code
 - `/api/referral/apply` - Apply referral code for bonuses
 - `/api/leaderboard` - Top 100 users by points
+- **Solana Endpoints**:
+  - POST `/api/solana/connect` - Register Solana wallet address
+  - GET `/api/solana/address/:userAddress` - Retrieve connected Solana address
 
 ### External Dependencies
 
@@ -150,10 +160,14 @@ Preferred communication style: Simple, everyday language.
 - **DexScreener API**: Real-time token prices (free, no key required)
 
 **Web3 Stack (Implemented)**
-- **wagmi**: React hooks for Ethereum with injected connector (MetaMask)
-- **viem**: Low-level Ethereum interactions
-- Real MetaMask wallet connection enabled - users connect actual wallets
-- Supports mainnet, Sepolia, Base, and Base Sepolia networks
+- **Solana web3.js**: Loaded via CDN for Solana mainnet integration
+- **Phantom Wallet**: Primary wallet for SOL betting on mainnet
+- **SolanaContext**: React context managing wallet connection state, balance, and mode switching
+- **Dual-Mode System**:
+  - **Simulated Mode**: USDC-based betting using internal ledger (default)
+  - **Mainnet Mode**: Real SOL betting on Solana mainnet with Phantom wallet
+- Real-time SOL balance fetching from Solana mainnet
+- Wallet address registration with backend for user tracking
 
 **UI & Utilities**
 - **Radix UI**: Unstyled accessible components (dialogs, dropdowns, tooltips, etc.)

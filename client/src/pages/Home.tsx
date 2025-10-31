@@ -80,12 +80,14 @@ export default function Home() {
 
   // Place bet mutation
   const placeBetMutation = useMutation({
-    mutationFn: async ({ side, amount }: { side: "RIGHT" | "WRONG"; amount: string }) => {
+    mutationFn: async ({ side, amount, mode, currency }: { side: "RIGHT" | "WRONG"; amount: string; mode?: "simulated" | "mainnet"; currency?: "USDC" | "SOL" }) => {
       return apiRequest("POST", "/api/bet", {
         marketId: selectedMarket?.id,
         userAddress,
         side,
         amount,
+        mode: mode || "simulated",
+        currency: currency || "USDC",
       });
     },
     onSuccess: async () => {
@@ -114,7 +116,7 @@ export default function Home() {
     },
   });
 
-  const handleBet = async (side: "RIGHT" | "WRONG", amount: string) => {
+  const handleBet = async (side: "RIGHT" | "WRONG", amount: string, mode?: "simulated" | "mainnet", currency?: "USDC" | "SOL") => {
     if (!isAuthenticated || !userAddress) {
       toast({
         title: "Not Logged In",
@@ -123,7 +125,7 @@ export default function Home() {
       });
       return;
     }
-    await placeBetMutation.mutateAsync({ side, amount });
+    await placeBetMutation.mutateAsync({ side, amount, mode, currency });
   };
 
   const handleLogin = () => {

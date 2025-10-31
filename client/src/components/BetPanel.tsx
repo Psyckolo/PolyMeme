@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NeonButton } from "./NeonButton";
+import { useSolana } from "@/contexts/SolanaContext";
 import { Loader2 } from "lucide-react";
 import type { Market } from "@shared/schema";
 
@@ -10,20 +11,24 @@ interface BetPanelProps {
   market: Market | null;
   userBalance: string;
   isConnected: boolean;
-  onBet: (side: "RIGHT" | "WRONG", amount: string) => Promise<void>;
+  onBet: (side: "RIGHT" | "WRONG", amount: string, mode?: "simulated" | "mainnet", currency?: "USDC" | "SOL") => Promise<void>;
   onConnect: () => void;
 }
 
 export function BetPanel({ market, userBalance, isConnected, onBet, onConnect }: BetPanelProps) {
+  const { mode, walletAddress, solBalance } = useSolana();
   const [amount, setAmount] = useState("");
   const [isPlacingBet, setIsPlacingBet] = useState(false);
+
+  const currency = mode === "mainnet" ? "SOL" : "USDC";
+  const displayBalance = mode === "mainnet" ? solBalance.toFixed(4) : userBalance;
 
   const handleBet = async (side: "RIGHT" | "WRONG") => {
     if (!amount || parseFloat(amount) <= 0) return;
     
     setIsPlacingBet(true);
     try {
-      await onBet(side, amount);
+      await onBet(side, amount, mode, currency);
       setAmount("");
     } finally {
       setIsPlacingBet(false);
@@ -73,14 +78,14 @@ export function BetPanel({ market, userBalance, isConnected, onBet, onConnect }:
       <div className="flex items-center justify-between p-4 bg-muted/20 rounded-lg">
         <span className="text-sm text-muted-foreground">Your Balance</span>
         <span className="font-mono text-xl font-bold" data-testid="text-user-balance">
-          {parseFloat(userBalance).toLocaleString()} <span className="text-sm text-muted-foreground">USDC</span>
+          {parseFloat(displayBalance).toLocaleString(undefined, { maximumFractionDigits: 4 })} <span className="text-sm text-muted-foreground">{currency}</span>
         </span>
       </div>
 
       {/* Amount Input */}
       <div className="space-y-2">
         <Label htmlFor="bet-amount" className="text-sm uppercase tracking-wide text-muted-foreground">
-          Bet Amount (USDC)
+          Bet Amount ({currency})
         </Label>
         <Input
           id="bet-amount"
