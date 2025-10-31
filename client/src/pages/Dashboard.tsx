@@ -8,6 +8,9 @@ import { PositionsTable } from "@/components/PositionsTable";
 import { BalancePanel } from "@/components/BalancePanel";
 import { PointsPanel } from "@/components/PointsPanel";
 import { HistoryPanel } from "@/components/HistoryPanel";
+import { ModeSwitch } from "@/components/ModeSwitch";
+import { SolanaWalletButton } from "@/components/SolanaWalletButton";
+import { SolanaBalanceCard } from "@/components/SolanaBalanceCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Wallet, LogOut } from "lucide-react";
@@ -125,7 +128,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4 flex-wrap">
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
@@ -135,8 +138,12 @@ export default function Dashboard() {
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Button>
+
+          <ModeSwitch />
           
           <div className="flex items-center gap-2">
+            <SolanaWalletButton />
+            
             {isAuthenticated ? (
               <>
                 <Badge variant="outline" className="bg-[hsl(var(--neon-cyan))]/20 border-[hsl(var(--neon-cyan))]/60 text-[hsl(var(--neon-cyan))] shadow-[0_0_8px_rgba(0,255,255,0.3)]" data-testid="badge-user-name">
@@ -220,7 +227,9 @@ export default function Dashboard() {
             />
           </TabsContent>
 
-          <TabsContent value="balance" className="max-w-2xl">
+          <TabsContent value="balance" className="max-w-2xl space-y-4">
+            <SolanaBalanceCard />
+            
             <BalancePanel
               balance={balanceData?.balance || "0"}
               onDeposit={async (amount) => { await depositMutation.mutateAsync(amount); }}

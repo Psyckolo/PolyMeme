@@ -10,6 +10,8 @@ import { ProphetChatDrawer } from "@/components/ProphetChatDrawer";
 import { MarketsTimeline } from "@/components/MarketsTimeline";
 import { PastMarkets } from "@/components/PastMarkets";
 import { RecentActivity } from "@/components/RecentActivity";
+import { ModeSwitch } from "@/components/ModeSwitch";
+import { SolanaWalletButton } from "@/components/SolanaWalletButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -235,17 +237,18 @@ export default function Home() {
 
       {/* Header */}
       <header className="relative z-10 border-b border-border backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-display font-black">
               <GlitchText text="Polymeme" className="text-3xl" />
             </h1>
-            <Badge variant="outline" className="text-xs" data-testid="badge-data-mode">
-              {selectedMarket?.status === "SETTLED" ? "Live Data" : "Simulated"}
-            </Badge>
           </div>
+
+          <ModeSwitch />
           
           <div className="flex items-center gap-3">
+            <SolanaWalletButton />
+            
             {isAuthenticated && (
               <Link href="/dashboard" data-testid="link-dashboard">
                 <Button variant="outline" size="sm">
