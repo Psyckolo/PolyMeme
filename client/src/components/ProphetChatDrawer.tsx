@@ -64,7 +64,7 @@ export function ProphetChatDrawer({ onAsk }: ProphetChatDrawerProps) {
         <SheetHeader>
           <SheetTitle className="text-2xl font-display flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-[hsl(var(--neon-cyan))]" />
-            Ask the Prophet
+            Ask the Degen AI
           </SheetTitle>
         </SheetHeader>
         

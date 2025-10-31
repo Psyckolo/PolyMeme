@@ -53,7 +53,7 @@ export function RecentActivity() {
           <Activity className="w-5 h-5 text-[hsl(var(--neon-magenta))]" />
           Recent Market Activity
         </CardTitle>
-        <CardDescription>Live betting activity from ProphetX users</CardDescription>
+        <CardDescription>Live betting activity from Polymeme degens</CardDescription>
       </CardHeader>
       <CardContent>
         {/* Statistics */}

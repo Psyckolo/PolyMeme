@@ -237,7 +237,7 @@ export default function Dashboard() {
             <Card className="p-12 text-center">
               <h3 className="text-2xl font-bold mb-4">Staking - Coming Soon</h3>
               <p className="text-muted-foreground mb-6">
-                Stake your ProphetX tokens to reduce betting fees and earn rewards.
+                Stake your $POLY tokens to reduce betting fees and earn rewards.
               </p>
               <div className="max-w-md mx-auto text-left space-y-3">
                 <div className="flex items-start gap-2">

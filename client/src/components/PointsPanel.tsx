@@ -81,7 +81,7 @@ export function PointsPanel({ userAddress }: PointsPanelProps) {
   const shareOnX = () => {
     if (!stats?.referralCode) return;
     const link = `${window.location.origin}?ref=${stats.referralCode}`;
-    const text = `Join me on ProphetX! 🔮\n\nPredict crypto prices with AI and earn rewards!\n\nUse my referral code: ${stats.referralCode}\n\nWe both get bonus points! 🎁`;
+    const text = `Join me on Polymeme! 🎰\n\nDegen AI predicts crypto - bet RIGHT or WRONG!\n\nUse my code: ${stats.referralCode}\n\nBoth get bonus points! 💎`;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`;
     window.open(twitterUrl, '_blank');
   };

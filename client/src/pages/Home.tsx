@@ -238,7 +238,7 @@ export default function Home() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-display font-black">
-              <GlitchText text="ProphetX" className="text-3xl" />
+              <GlitchText text="Polymeme" className="text-3xl" />
             </h1>
             <Badge variant="outline" className="text-xs" data-testid="badge-data-mode">
               {selectedMarket?.status === "SETTLED" ? "Live Data" : "Simulated"}
@@ -265,8 +265,8 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center space-y-6 max-w-4xl mx-auto">
           <h2 className="text-5xl md:text-7xl font-black font-display tracking-tight">
-            <GlitchText text="PROPHET" className="inline-block" />
-            <span className="text-[hsl(var(--neon-cyan))]">X</span>
+            <GlitchText text="POLY" className="inline-block" />
+            <span className="text-[hsl(var(--neon-magenta))]">MEME</span>
           </h2>
           <p className="text-xl md:text-2xl text-foreground max-w-2xl mx-auto leading-relaxed">
             Every day, the AI makes predictions on NFT floors and token prices.{" "}
