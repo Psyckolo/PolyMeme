@@ -85,6 +85,12 @@ Preferred communication style: Simple, everyday language.
   - `bets.mode`: 'simulated' (USDC) or 'mainnet' (SOL)
   - `bets.currency`: 'USDC' or 'SOL'
 
+**Solana RPC Configuration**:
+  - Uses Helius RPC (`HELIUS_API_KEY` environment variable) for mainnet access
+  - Backend endpoint `/api/solana/rpc-url` securely provides RPC URL to frontend
+  - Fallback to public RPC if no API key (not recommended for production)
+  - 1M free requests/month with Helius free tier
+
 **Points & Referral System**
 - **Points Earning**: 1 point per USDC wagered (auto-calculated on each bet)
 - **Referral Bonuses**: 
@@ -151,6 +157,7 @@ Preferred communication style: Simple, everyday language.
 - **Solana Endpoints**:
   - POST `/api/solana/connect` - Register Solana wallet address
   - GET `/api/solana/address/:userAddress` - Retrieve connected Solana address
+  - GET `/api/solana/rpc-url` - Get Helius RPC URL with API key (secured backend route)
 
 ### External Dependencies
 

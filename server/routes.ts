@@ -542,6 +542,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get Helius RPC URL (secured backend endpoint)
+  app.get("/api/solana/rpc-url", async (req, res) => {
+    try {
+      const heliusKey = process.env.HELIUS_API_KEY;
+      
+      if (!heliusKey) {
+        // Fallback to public RPC if no key (not recommended for production)
+        return res.json({ url: "https://api.mainnet-beta.solana.com" });
+      }
+      
+      // Return Helius RPC URL with API key
+      const rpcUrl = `https://mainnet.helius-rpc.com/?api-key=${heliusKey}`;
+      res.json({ url: rpcUrl });
+    } catch (error) {
+      console.error("Error providing RPC URL:", error);
+      res.status(500).json({ error: "Failed to provide RPC URL" });
+    }
+  });
+
   // Chat with Prophet
   app.post("/api/chat", async (req, res) => {
     try {

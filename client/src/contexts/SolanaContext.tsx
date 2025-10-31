@@ -40,10 +40,12 @@ export function SolanaProvider({ children }: { children: ReactNode }) {
       const publicKey = response.publicKey.toString();
       setWalletAddress(publicKey);
 
-      // Fetch balance
-      const connection = new (window as any).solanaWeb3.Connection(
-        'https://api.mainnet-beta.solana.com'
-      );
+      // Fetch RPC URL from backend (includes Helius API key)
+      const rpcResponse = await fetch('/api/solana/rpc-url');
+      const { url: rpcUrl } = await rpcResponse.json();
+      
+      // Fetch balance using Helius RPC
+      const connection = new (window as any).solanaWeb3.Connection(rpcUrl);
       const balance = await connection.getBalance(response.publicKey);
       setSolBalance(balance / 1e9); // Convert lamports to SOL
 
