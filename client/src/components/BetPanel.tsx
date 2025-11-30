@@ -107,7 +107,7 @@ export function BetPanel({ market, userBalance, isConnected, onBet, onConnect }:
                   className="px-3 py-1 text-xs bg-muted hover-elevate active-elevate-2 rounded-md font-mono font-bold"
                   data-testid={`button-preset-${preset}`}
                 >
-                  {preset}◎
+                  {preset} SOL
                 </button>
               ))
             : ["10", "50", "100", "500"].map((preset) => (
