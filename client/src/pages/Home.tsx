@@ -147,13 +147,6 @@ export default function Home() {
     );
   }
 
-  const handlePhantomLogin = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Phantom login will be available soon!",
-    });
-  };
-
   // Simplified connect button rendering
   const renderAuthButton = () => {
     if (!isAuthenticated) {
@@ -166,15 +159,6 @@ export default function Home() {
           >
             <Wallet className="mr-2 h-4 w-4" />
             Login with X
-          </Button>
-          <Button 
-            onClick={handlePhantomLogin}
-            variant="outline"
-            className="border-[#ff00ff] text-[#ff00ff] hover:bg-[#ff00ff]/10"
-            data-testid="button-login-phantom"
-          >
-            <Wallet className="mr-2 h-4 w-4" />
-            Phantom soon
           </Button>
         </div>
       );
@@ -281,16 +265,13 @@ export default function Home() {
           </p>
           
           <div className="mt-4">
-            <a
-              href="https://pump.fun/coin/9YtiWEDKHmVWPHQ8Uk4V2CMPBqj4ZzGNu26n4Ke3pump"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-mono text-[hsl(var(--neon-cyan))] hover:text-[hsl(var(--neon-cyan))]/80 transition-colors hover-elevate px-3 py-1.5 rounded-md border border-[hsl(var(--neon-cyan))]/30 bg-[hsl(var(--neon-cyan))]/5"
-              data-testid="link-prox-token"
+            <span
+              className="inline-flex items-center gap-2 text-sm font-mono text-[hsl(var(--neon-cyan))] px-3 py-1.5 rounded-md border border-[hsl(var(--neon-cyan))]/30 bg-[hsl(var(--neon-cyan))]/5"
+              data-testid="text-poly-token"
             >
-              <span className="text-muted-foreground">$PROX address:</span>
-              <span className="font-bold">9YtiWEDKHmVWPHQ8Uk4V2CMPBqj4ZzGNu26n4Ke3pump</span>
-            </a>
+              <span className="text-muted-foreground">$POLY address :</span>
+              <span className="font-bold">_</span>
+            </span>
           </div>
         </div>
 

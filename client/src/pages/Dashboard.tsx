@@ -159,25 +159,14 @@ export default function Dashboard() {
                 </Button>
               </>
             ) : (
-              <div className="flex items-center gap-2">
-                <Button 
-                  onClick={() => window.location.href = "/auth/twitter"} 
-                  variant="default"
-                  data-testid="button-login"
-                >
-                  <Wallet className="w-4 h-4 mr-2" />
-                  Login with X
-                </Button>
-                <Button 
-                  onClick={() => toast({ title: "Coming Soon", description: "Phantom login will be available soon!" })}
-                  variant="outline"
-                  className="border-[#ff00ff] text-[#ff00ff] hover:bg-[#ff00ff]/10"
-                  data-testid="button-login-phantom"
-                >
-                  <Wallet className="w-4 h-4 mr-2" />
-                  Phantom soon
-                </Button>
-              </div>
+              <Button 
+                onClick={() => window.location.href = "/auth/twitter"} 
+                variant="default"
+                data-testid="button-login"
+              >
+                <Wallet className="w-4 h-4 mr-2" />
+                Login with X
+              </Button>
             )}
           </div>
         </div>
@@ -189,25 +178,14 @@ export default function Dashboard() {
 
         {!isAuthenticated ? (
           <Card className="p-12 text-center">
-            <p className="text-muted-foreground mb-4">Log in with X (Twitter) or Phantom to view your dashboard</p>
-            <div className="flex gap-3 justify-center">
-              <Button 
-                onClick={() => window.location.href = "/auth/twitter"}
-                data-testid="button-login-dashboard"
-              >
-                <Wallet className="w-4 h-4 mr-2" />
-                Login with X
-              </Button>
-              <Button 
-                onClick={() => toast({ title: "Coming Soon", description: "Phantom login will be available soon!" })}
-                variant="outline"
-                className="border-[#ff00ff] text-[#ff00ff] hover:bg-[#ff00ff]/10"
-                data-testid="button-login-phantom-dashboard"
-              >
-                <Wallet className="w-4 h-4 mr-2" />
-                Phantom soon
-              </Button>
-            </div>
+            <p className="text-muted-foreground mb-4">Log in with X (Twitter) to view your dashboard</p>
+            <Button 
+              onClick={() => window.location.href = "/auth/twitter"}
+              data-testid="button-login-dashboard"
+            >
+              <Wallet className="w-4 h-4 mr-2" />
+              Login with X
+            </Button>
           </Card>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
