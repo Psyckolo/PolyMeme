@@ -139,6 +139,6 @@ Pudgy Penguins, Milady, Bored Ape Yacht Club, Azuki, DeGods, Doodles, Clone X, M
 ---
 ## Liens
 - **Website** : https://polymeme-ai.xyz
-- **Twitter** : @PolymemeAI
+- **Twitter** : [@PolymemeAI](https://x.com/solmefers)
 ---
 *Built for degens, by degens.* 🐸
