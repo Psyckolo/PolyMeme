@@ -88,7 +88,7 @@ export function PositionsTable({ positions, onClaim, onViewRationale }: Position
                     </Badge>
                   </TableCell>
                   <TableCell className="font-mono" data-testid={`text-stake-${position.id}`}>
-                    {parseFloat(position.amount).toLocaleString()} USDC
+                    {parseFloat(position.amount).toLocaleString()} {position.currency || "USDC"}
                   </TableCell>
                   <TableCell>
                     {position.claimed ? (
@@ -156,7 +156,7 @@ export function PositionsTable({ positions, onClaim, onViewRationale }: Position
                           {position.payout && (
                             <div>
                               <span className="text-muted-foreground">Payout:</span>
-                              <span className="ml-2 font-mono font-bold">{parseFloat(position.payout).toLocaleString()} USDC</span>
+                              <span className="ml-2 font-mono font-bold">{parseFloat(position.payout).toLocaleString()} {position.currency || "USDC"}</span>
                             </div>
                           )}
                         </div>

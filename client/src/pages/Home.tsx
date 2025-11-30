@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useSolana } from "@/contexts/SolanaContext";
 import { Link } from "wouter";
 import { GlitchText } from "@/components/GlitchText";
 import { ParticleField } from "@/components/ParticleField";
@@ -24,6 +25,7 @@ import heroImage from "@assets/generated_images/Cyberpunk_terminal_hero_backgrou
 export default function Home() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
+  const { mode, walletAddress, sendSol } = useSolana();
   const userAddress = user?.id || "";
 
   // Track previous auth state to show toast only on new logins
@@ -116,7 +118,7 @@ export default function Home() {
     },
   });
 
-  const handleBet = async (side: "RIGHT" | "WRONG", amount: string, mode?: "simulated" | "mainnet", currency?: "USDC" | "SOL") => {
+  const handleBet = async (side: "RIGHT" | "WRONG", amount: string, betMode?: "simulated" | "mainnet", currency?: "USDC" | "SOL") => {
     if (!isAuthenticated || !userAddress) {
       toast({
         title: "🚫 Hold Up Anon",
@@ -125,7 +127,48 @@ export default function Home() {
       });
       return;
     }
-    await placeBetMutation.mutateAsync({ side, amount, mode, currency });
+
+    // For mainnet mode, require Solana transaction first
+    if (betMode === "mainnet" || mode === "mainnet") {
+      if (!walletAddress) {
+        toast({
+          title: "🔗 Connect Phantom First",
+          description: "Need wallet connected for mainnet betting",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const amountSol = parseFloat(amount);
+      if (amountSol <= 0) {
+        toast({
+          title: "❌ Invalid Amount",
+          description: "Enter a valid SOL amount",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "⏳ Sending SOL...",
+        description: "Confirm transaction in your Phantom wallet",
+      });
+
+      // Send SOL transaction
+      const txSignature = await sendSol(amountSol);
+      
+      if (!txSignature) {
+        // Transaction failed or was cancelled - don't record bet
+        return;
+      }
+
+      toast({
+        title: "✅ Transaction Confirmed",
+        description: "Recording your bet on-chain...",
+      });
+    }
+
+    await placeBetMutation.mutateAsync({ side, amount, mode: betMode || mode, currency: currency || (mode === "mainnet" ? "SOL" : "USDC") });
   };
 
   const handleLogin = () => {
